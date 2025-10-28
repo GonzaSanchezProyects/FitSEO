@@ -1,0 +1,89 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;200;300;400;500;600;700&display=swap');
+
+/* Variables de color */
+:root {
+  --secondary-color: #FFFFFF; /* Blanco */
+  --text-color: #333333;
+  --bg-light: #F7F7F7;
+  background: #126782;
+  background: linear-gradient(90deg, rgba(18,103,130,1) 54%, rgba(18,117,148,1) 78%, rgba(18,129,163,1) 100%);
+}
+
+/* Contenedor principal */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--bg-light);
+  height: 100%;
+  width: 100%;
+}
+
+/* Navbar */
+nav {
+  background-color: var(--primary-color);
+  color: var(--secondary-color);
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+nav h1 {
+  font-size: 1.5rem;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  gap: 1rem;
+}
+
+nav ul li a {
+  color: var(--secondary-color);
+  text-decoration: none;
+  font-weight: bold;
+}
+
+
+/* Main */
+main {
+  flex: 1;
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+
+/* Inputs */
+input {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  margin: 0.5rem 0;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+body{
+  padding: 0px;
+}
+
+/* Mobile first */
+@media (min-width: 768px) {
+  nav h1 {
+    font-size: 2rem;
+  }
+
+  nav ul {
+    gap: 2rem;
+  }
+}

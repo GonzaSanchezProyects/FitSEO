@@ -1,0 +1,90 @@
+.profile-section-container {
+  width: 100%;
+  padding: 1.5rem;
+  background: #126782;
+  background: linear-gradient(90deg, rgba(18,103,130,1) 54%, rgba(18,117,148,1) 78%, rgba(18,129,163,1) 100%);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  font-family: 'Poppins', sans-serif;
+  color: #fff;
+  height: 900px;
+}
+
+.profile-section-container h2 {
+  text-align: center;
+  color: #fff;
+  margin-bottom: 1.5rem;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.profile-pic {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #fff;
+}
+
+.profile-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-name {
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: #fff;
+}
+
+.profile-email {
+  font-size: 0.9rem;
+  color: #e0e0e0;
+}
+
+.profile-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-bottom: 1.5rem;
+}
+
+.profile-btn {
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  background-color: rgba(255,255,255,0.15);
+  color: #fff;
+  transition: all 0.2s;
+}
+
+.profile-btn:hover {
+  background-color: rgba(255,255,255,0.25);
+  transform: translateY(-1px);
+}
+
+.logout-btn {
+  background-color: rgba(255,0,0,0.6);
+}
+
+.logout-btn:hover {
+  background-color: rgba(255,0,0,0.8);
+}
+
+.profile-extra h3 {
+  margin-top: 1rem;
+  margin-bottom: 0.3rem;
+  color: #fff;
+}
+
+.profile-extra p {
+  margin: 0.2rem 0;
+  font-size: 0.95rem;
+  color: #e0e0e0;
+}

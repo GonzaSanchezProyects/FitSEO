@@ -1,0 +1,73 @@
+.home-container {
+  display: flex;
+  flex-direction: column; /* para que el contenido se apile verticalmente */
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* ocupa toda la pantalla */
+  text-align: center;
+  color: #188aad;
+  position: relative;
+  background-image: url(/background.jpg);
+  background-size: cover;
+  background-position: center;
+  overflow: hidden;
+}
+
+/* Capa gris difuminada */
+.home-container::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55); /* gris oscuro semitransparente */
+  backdrop-filter: blur(3px); /* difumina ligeramente la imagen */
+  z-index: 1;
+}
+
+/* Contenido principal */
+.hero {
+  position: relative;
+  z-index: 2; /* encima del ::before */
+  padding: 1rem;
+  font-family: "Poppins";
+}
+
+.hero h1 {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  font-weight: 700;
+}
+
+.hero p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  font-weight: 100;
+  font-weight: lighter;
+}
+
+.hero button {
+  background-color: #1a99bf;
+  margin: 2px solid black;
+  color: black;
+  font-weight: bold;
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1rem;
+  position: relative;
+  z-index: 2;
+}
+
+.hero button:hover {
+  opacity: 0.9;
+}
+
+/* Desktop */
+@media (min-width: 768px) {
+  .hero h1 {
+    font-size: 4rem;
+  }
+  .hero p {
+    font-size: 1.5rem;
+  }
+}

@@ -1,0 +1,128 @@
+.app-nav {
+  position: fixed;
+  width: 100%;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+  height: 60px;
+  left: 0;
+  bottom: 0;
+  padding: 0 25px;
+  gap: 6.5rem;
+}
+.nav-group a{
+  width: 60px;
+}
+
+/* 🔹 GRUPOS IZQ / DER */
+.nav-group {
+  display: flex;
+  gap: 20px;
+}
+
+.app-nav a {
+  color: #126782;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.app-nav a svg {
+  font-size: 1.5rem;
+}
+
+.app-nav a.active {
+  color: white;
+  background-color: #126782;
+  border-radius: 10px;
+  padding: 5px 10px;
+}
+
+/* 🔵 BOTÓN QR CENTRAL */
+.qr-button {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%) translateY(-20%);
+}
+
+.qr-button a {
+  background: linear-gradient(90deg, #126782 54%, #128da3 100%);
+  color: white;
+  border-radius: 50%;
+  width: 65px;
+  height: 65px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.qr-button a:hover {
+  transform: translateY(-2px) scale(1.1);
+}
+
+.qr-button svg {
+  font-size: 1.8rem;
+}
+
+/* 🟢 BURBUJA DE INICIO (flotante sobre el navbar, derecha) */
+.home-bubble {
+  position: absolute;
+  right: 35px;
+  bottom: 70px; /* 🔼 flotando arriba del navbar */
+}
+
+.home-bubble a {
+  background: linear-gradient(90deg, #128da3 54%, #12a7c0 100%);
+  color: white;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s ease;
+}
+
+.home-bubble a:hover {
+  transform: translateY(-3px) scale(1.1);
+}
+
+.home-bubble svg {
+  font-size: 1.7rem;
+}
+
+/* ✅ ESTILO DESKTOP */
+@media (min-width: 768px) {
+  .app-nav {
+    top: 0;
+    bottom: auto;
+    padding: 0 80px;
+  }
+
+  .qr-button {
+    transform: translateX(-50%) translateY(0);
+  }
+
+  .qr-button a {
+    width: 55px;
+    height: 55px;
+  }
+
+  .home-bubble {
+    bottom: auto;
+    top: 65px; /* 🔼 flotante sobre la barra superior */
+  }
+
+  .home-bubble a {
+    width: 55px;
+    height: 55px;
+  }
+}

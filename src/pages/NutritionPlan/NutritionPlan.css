@@ -1,0 +1,148 @@
+.nutrition-container .mainTitle {
+  font-size: 2.25rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  color: #fff;
+  width: 100%;
+}
+.nutrition-container p{
+  width: 100%;
+}
+
+.nutrition-container .title{
+  text-align: start;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  justify-content: start;
+}
+
+.nutrition-container{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem;
+  font-family: 'Poppins';
+  gap: 2rem;
+  background: #126782;
+  background: linear-gradient(90deg, rgba(18,103,130,1) 54%, rgba(18,117,148,1) 78%, rgba(18,129,163,1) 100%);
+  height: 100%;
+}
+
+.nutricionSection2{
+  text-align: center;
+  margin-bottom: 0px;
+}
+
+.meal-cards {
+  display: flex;
+  flex-direction: column;
+}
+
+
+.card p {
+  color: #333333;
+}
+.icon {
+  font-size: 2rem;
+  color: #FF7300;
+  margin-bottom: 0.5rem;
+}
+
+
+.nutrition-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* Tarjetas de comida */
+
+.dietaContainer{
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.meal-card {
+  width: 100%;
+  max-width: 500px;
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  background-color: #fff;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.meal-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+}
+
+/* Títulos de comidas */
+.meal-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.8rem;
+  color: #1d2943;
+}
+
+/* Colores por tipo de comida */
+.meal-card:nth-child(2) { /* Desayuno */
+  border-left: 6px solid #fbbf24; /* amarillo */
+}
+.meal-card:nth-child(3) { /* Almuerzo */
+  border-left: 6px solid #3b82f6; /* azul */
+}
+.meal-card:nth-child(4) { /* Cena */
+  border-left: 6px solid #ef4444; /* rojo */
+}
+.meal-card:nth-child(5) { /* Colaciones */
+  border-left: 6px solid #10b981; /* verde */
+}
+
+.meal-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.meal-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.meal-item:last-child {
+  border-bottom: none;
+}
+
+.food-name {
+  font-weight: 500;
+  color: #111827;
+}
+
+.food-macros {
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .meal-card {
+    padding: 1rem;
+  }
+
+  .meal-title {
+    font-size: 1.3rem;
+  }
+
+  .food-macros {
+    font-size: 0.8rem;
+  }
+}
+

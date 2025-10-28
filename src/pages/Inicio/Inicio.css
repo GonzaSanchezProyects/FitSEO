@@ -1,0 +1,285 @@
+/* Importar tipografía moderna */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Inter:wght@400;600;700&display=swap');
+
+/* Tipografía base */
+body, .inicio-container {
+  font-family: 'Poppins', sans-serif;
+  color: #fff;
+  background: #126782;
+  background: linear-gradient(90deg, rgba(18,103,130,1) 54%, rgba(18,117,148,1) 78%, rgba(18,129,163,1) 100%);
+  min-height: 100vh;
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+.inicio-container{
+  width: 100%;
+}
+
+/* Header */
+.inicio-header {
+  text-align: start;
+  margin-bottom: 2rem;
+}
+
+.inicio-header h2 {
+  font-size: 2.25rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.5rem;
+}
+
+.inicio-header p {
+  font-size: 1.125rem;
+  font-weight: 400;
+  color: #ddd;
+  margin-bottom: 5px;
+}
+
+/* Sección de gráfico */
+.DivChart{
+  display: flex;
+  width: 120%;
+  justify-content: center;
+  align-items: center;
+  padding-right: 95px;
+}
+
+.chart-section {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  width: 100%;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 5px 10px;
+}
+
+.chart-section h3 {
+  font-size: 1.45rem;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 600;
+  color: #002853f3;
+  margin-bottom: 1rem;
+  text-align: left;
+}
+
+.chart {
+  width: 100%;
+  height: 200px;
+}
+
+.chart-reference {
+  font-size: 0.9rem;
+  color: #555;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.nutricionSection h3{
+  margin: 0px;
+}
+
+.summary-section {
+  background: #FFF;
+  border-radius: 15px;
+  padding: 1.5rem;
+  text-align: start;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 5px 10px;
+}
+
+.summary-section h3 {
+  font-size: 1.5rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 800;
+  color: #003772f3;
+  margin-bottom: 1rem;
+}
+
+.summary-section ul {
+  list-style: none;
+  padding: 0;
+  color: #002144f3;
+  text-align: start;
+}
+
+.summary-section li {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Sección de estado y asistencia */
+.status-section {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.status-card {
+  flex: 1;
+  background-color: #fff;
+  color: #333;
+  padding: 1.5rem;
+  border-radius: 15px;
+  box-shadow: 0 0 15px rgba(255, 115, 0, 0.2);
+  text-align: center;
+  min-width: 200px;
+}
+
+.status-card .chart {
+  height: 120px;
+}
+
+/* Calendario asistencia */
+
+.calendar-container{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.calendar-container h4{
+  color: #002043b3;
+  text-align: start;
+  margin-bottom: 20px;
+  font-size: 1.2rem;
+  font-weight: 300;
+}
+
+.week-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-weight: bold;
+  color: #555; /* Mantiene el color de tu sección original */
+  font-family: 'Poppins', sans-serif;
+}
+
+.week-day {
+  padding: 0.2rem 0;
+  font-size: 0.9rem;
+  color: #082d38;
+}
+
+.calendar {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin-top: 1rem; /* mantiene espacio de sección original */
+}
+
+.calendar-day {
+  width: 40px;
+  height: 40px;
+  background-color: #f0f0f0;
+  color: #333;
+  border-radius: 116px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Poppins', sans-serif;
+  transition: transform 0.3s, background-color 0.3s;
+}
+
+.calendar-day.active {
+  background-color: #126782;
+  color: #fff;
+  font-weight: bold;
+}
+
+.calendar-day.domingo {
+  color: red; /* domingos destacados */
+  background-color: white;
+}
+
+.calendar-day:hover {
+  transform: scale(1.1);
+}
+
+/* Macros */
+.macros-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1.5rem;
+  gap: 1rem;
+}
+
+.macro-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 20px;
+  width: 100px;
+}
+
+.macro-ring {
+  position: relative;
+  width: 100px;
+  height: 100px;
+}
+
+.meta-text {
+  padding-top: 1rem;
+  text-align: center;
+  font-size: 1rem;
+  color: #333;
+  font-family: 'Poppins', sans-serif;
+}
+
+.ratio{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1rem;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.macro-label {
+  font-weight: 600;
+  margin-top: 0.5rem;
+  font-family: 'Poppins', sans-serif;
+}
+
+.macro-restante {
+  font-size: 0.9rem;
+  color: #555;
+  font-family: 'Poppins', sans-serif;
+}
+
+.macro-label.protein {
+  color: #00c46a;
+}
+
+.macro-label.carbs {
+  color: #ff4d4d;
+}
+
+.macro-label.fat {
+  color: #007bff;
+}
+
+/* Responsive */
+@media(min-width: 768px) {
+  .inicio-header h2 {
+    font-size: 2.75rem;
+  }
+
+  .inicio-header p {
+    font-size: 1.25rem;
+  }
+
+  .chart {
+    height: 350px;
+  }
+}
+
+@media(max-width: 480px) {
+
+}

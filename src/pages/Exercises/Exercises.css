@@ -1,0 +1,218 @@
+.exercises-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem;
+  font-family: 'Poppins';
+  gap: 2rem;
+  background: #126782;
+  background: linear-gradient(90deg, rgba(18,103,130,1) 54%, rgba(18,117,148,1) 78%, rgba(18,129,163,1) 100%);
+}
+
+.exercises-container h2{
+  font-size: 2.25rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  color: #fff;
+  width: 100%;
+}
+
+.ExerciseH2{
+  display: flex;
+  justify-content: start;
+  flex-direction: column;
+  width: 100%;
+}
+
+.exercise-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 400px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 1.5rem;
+  width: 100%;
+  box-shadow: rgba(0, 0, 0, 0.24) 0px 5px 10px;
+}
+
+.card ul{
+  list-style: none;
+}
+
+.card li{
+  color: black;
+}
+
+.card h3 {
+  font-size: 1.5rem;
+  font-family: 'Poppins', sans-serif;
+  color: #002853f3;
+  text-align: center;
+  font-weight: 600;
+}
+
+.exerciseTitle{
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  gap: 1rem;
+}
+
+.card p {
+  color: #333;
+  margin-bottom: 1rem;
+}
+
+.card button {
+  background-color: #126782;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.card button:hover {
+  opacity: 0.9;
+}
+
+.custom-accordion {
+  background-color: #0f172a;
+  color: white;
+  border-radius: 12px;
+  max-width: 500px;
+  margin: 1.5rem auto;
+}
+
+.custom-accordion::before {
+  display: none; 
+}
+
+.accordion-summary {
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.expand-icon {
+  color: white;
+}
+
+.picExercise{
+  margin-top: 0.5rem;
+  width: 100%;
+  border: 1px solid #0f172a;
+  border-radius: 0.2rem;
+}
+
+.accordion-details {
+  color: #a1a1aa;
+  font-size: 0.9rem;
+  text-align: start;
+}
+
+.iconExercise{
+  height: 2rem;
+}
+
+.todo-section {
+  padding: 1rem;
+  border-radius: 8px;
+  width: 100%;
+  border-radius: 12px;
+}
+
+.todo-title {
+  margin-bottom: 1rem;
+  font-size: 1.4rem;
+  text-align: center;
+  font-weight: 400;
+}
+
+.todo-item {
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+
+.todo-item input[type="checkbox"] {
+  margin-right: 8px;
+  transform: scale(1.2);
+  cursor: pointer;
+  width: 1rem;
+}
+
+.todo-item span {
+  font-size: 1rem;
+  transition: color 0.3s, text-decoration 0.3s;
+}
+
+.todo-item .done {
+  text-decoration: line-through;
+}
+
+.checkbox-wrapper input[type="checkbox"] {
+  display: none;
+}
+
+.checkbox-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.label svg {
+  vertical-align: middle;
+}
+
+.path1 {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  transition: 0.5s stroke-dashoffset;
+  opacity: 0;
+}
+
+.check:checked + .label svg .path1 {
+  stroke-dashoffset: 0;
+  opacity: 1;
+}
+
+.label span {
+  position: relative;
+  font-size: 18px;
+  transition: color 0.3s;
+}
+
+.label span::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 0%;
+  height: 2px;
+  background: black;
+  transition: width 0.4s ease;
+  transform: translateY(-50%);
+}
+
+.check:checked + .label span::after {
+  width: 100%;
+}
+
+.check:checked + .label span {
+  color: gray;
+}

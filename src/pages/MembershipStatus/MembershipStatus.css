@@ -1,0 +1,119 @@
+
+.quota-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 1.5rem;
+  font-family: 'Poppins';
+  gap: 2rem;
+  background: #126782;
+  background: linear-gradient(90deg, rgba(18,103,130,1) 54%, rgba(18,117,148,1) 78%, rgba(18,129,163,1) 100%);
+  height: 900px;
+}
+
+.quota-container .titleMain {
+  font-size: 2rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0.5rem;
+  text-align: start;
+  width: 100%;
+}
+
+.quota-status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.quota-status span {
+  font-size: 0.95rem;
+}
+
+.estado {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.quota-status.pagada .estado {
+  color: rgb(0, 172, 0);
+  font-size: 1.2rem;
+}
+
+.quota-status.pendiente .estado {
+  color: orange;
+}
+
+.quota-status.vencida .estado {
+  color: red;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 10px;
+  background: #ddd;
+  border-radius: 8px;
+  margin-top: 0.5rem;
+  overflow: hidden;
+}
+
+.progress-fill {
+  border: 2px solid black;
+  height: 100%;
+  background: #0d4a5d;
+  border-radius: 8px;
+  transition: width 0.5s ease;
+}
+
+.previous-payments-container {
+  width: 100%;
+  max-width: 400px;
+  margin: 1rem auto;
+  padding: 1rem 1.5rem;
+  background: #f5f5f5;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  font-family: 'Poppins', sans-serif;
+}
+
+.previous-payments-container h3 {
+  text-align: center;
+  margin-bottom: 1rem;
+  color: #126782;
+}
+
+.payment-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6rem 1rem;
+  margin-bottom: 0.5rem;
+
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.payment-date, .payment-amount, .payment-status {
+  font-size: 0.9rem;
+  color: black;
+}
+
+.payment-status {
+  font-weight: 600;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  color: #fff;
+}
+
+.payment-status.paid {
+  background-color: green;
+}
+
+.payment-status.pending {
+  background-color: orange;
+}
+
+.payment-status.overdue {
+  background-color: red;
+}
