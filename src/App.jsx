@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import Inicio from "./pages/Inicio/Inicio";
-import Welcome from "./pages/Welcome/Welcome";
+import Welcome from "./pages/welcome/Welcome";
 import Login from "./pages/Login/Login";
 import Exercises from "./pages/Exercises/Exercises";
 import NutritionPlan from "./pages/NutritionPlan/NutritionPlan";
