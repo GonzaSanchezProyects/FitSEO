@@ -281,6 +281,24 @@ body, .inicio-container {
   }
 }
 
-@media(max-width: 480px) {
+@media(max-width: 400px) {
 
+  .macros-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1.5rem;
+  gap: 0.5rem;
+  } 
+  .macro-ring{
+    scale: 0.9;
+    display: flex;
+  }
+  .ratio{
+    top: 45.55%;
+    left: 45.55%;
+  }
+  .calendar-container{
+    scale: 0.9;
+  }
 }
