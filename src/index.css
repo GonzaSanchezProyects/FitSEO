@@ -4,9 +4,10 @@
   box-sizing: border-box;
   font-family: 'Poppins', sans-serif;
 }
-
-
-
+html, body {
+  overscroll-behavior-y: none;
+  overscroll-behavior-x: none;
+}
 /* Variables de color */
 :root {
   --secondary-color: #FFFFFF; /* Blanco */

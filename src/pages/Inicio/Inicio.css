@@ -10,6 +10,7 @@ body, .inicio-container {
   min-height: 100vh;
   padding: 1.5rem;
   box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 .inicio-container{
