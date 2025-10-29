@@ -12,7 +12,7 @@ import "aos/dist/aos.css";
 
 const AppContent = () => {
   const location = useLocation();
-  const hideNavbar = location.pathname === "/";
+  const hideNavbar = location.pathname === "/welcome";
 
     useEffect(() => {
     AOS.init({
