@@ -3,16 +3,19 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from "react-route
 import Navbar from "./components/Navbar";
 import Inicio from "./pages/Inicio/Inicio";
 import Welcome from "./pages/welcome/Welcome";
-import Login from "./pages/Login/Login";
+import Perfil from "./pages/Perfil/Perfil";
+import Login from "./pages/Login/Login"
 import Exercises from "./pages/Exercises/Exercises";
 import NutritionPlan from "./pages/NutritionPlan/NutritionPlan";
 import MembershipStatus from "./pages/MembershipStatus/MembershipStatus";
+import RutinesForm from "./pages/RutinesForm/RutinesForm"
+import NutritionForm from "./pages/NutritionForm/NutritionForm"
 import AOS from "aos";
 import "aos/dist/aos.css";
 
 const AppContent = () => {
   const location = useLocation();
-  const hideNavbar = location.pathname === "/welcome";
+  const hideNavbar = location.pathname === "/welcome" || location.pathname === "/login" || location.pathname === "/rutinesForm";
 
     useEffect(() => {
     AOS.init({
@@ -37,8 +40,12 @@ const AppContent = () => {
       >
         <Routes>
           <Route path="/" element={<Inicio />} />
-          <Route path="/inicio" element={<Inicio />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/welcome" element={<Welcome />} />
+          <Route path="/rutinesForm" element={<RutinesForm />} />
+          <Route path="/nutritionForm" element={<NutritionForm />} />
+          <Route path="/inicio" element={<Inicio />} />
+          <Route path="/perfil" element={<Perfil />} />
           <Route path="/exercises" element={<Exercises />} />
           <Route path="/nutrition" element={<NutritionPlan />} />
           <Route path="/membership" element={<MembershipStatus />} />

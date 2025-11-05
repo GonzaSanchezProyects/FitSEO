@@ -59,9 +59,9 @@ const Navbar = () => {
         </Link>
 
         <Link
-          to="/login"
-          className={active === "/login" ? "active" : ""}
-          onClick={() => setActive("/login")}
+          to="/perfil"
+          className={active === "/perfil" ? "active" : ""}
+          onClick={() => setActive("/perfil")}
         >
           <FaUser />
           <span>Perfil</span>

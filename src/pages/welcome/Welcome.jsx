@@ -6,8 +6,8 @@ const Welcome = () => {
       <div className="hero">
         <h1>FitSEO</h1>
         <p>Transformá tu cuerpo, empezá hoy</p>
-        <a href="./inicio">
-            <button onClick={() => navigate("/inicio")}>Comenzar</button>
+        <a href="./login">
+            <button>Comenzar</button>
         </a>
 
       </div>

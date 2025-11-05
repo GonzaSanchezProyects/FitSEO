@@ -1,39 +1,86 @@
+import React, { useState } from "react";
 import "./Login.css";
 
 const Login = () => {
+  const [username, setUsername] = useState(""); // input controlado
+  const [password, setPassword] = useState(""); // input controlado
+  const [role, setRole] = useState("SUPER_ADMIN"); // rol por defecto
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(""); // nuevo estado para mensaje de éxito
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await fetch(
+        "https://crmgym-backend-production.up.railway.app/api/auth/login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password, role }),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Credenciales incorrectas");
+      }
+
+      const data = await response.json();
+
+      // Guardar token
+      localStorage.setItem("crmToken", data.token || data.accessToken);
+
+      // Mostrar mensaje de éxito
+      setSuccess("¡Inicio de sesión exitoso ✅!");
+
+      // Redirigir después de 1.5 segundos
+      setTimeout(() => {
+        window.location.href = "/inicio";
+      }, 1500);
+
+    } catch (err) {
+      console.error("Error al iniciar sesión:", err);
+      setError(err.message || "Error al conectar con el servidor");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className="profile-section-container">
-      <h2 data-aos="fade-up" data-aos-delay="0" data-aos-duration="300">Mi Perfil</h2>
+    <div className="login-container">
+      <form className="login-form" onSubmit={handleSubmit}>
+        <h2 className="login-title">Iniciar Sesión</h2>
 
-      {/* --- Foto y Nombre --- */}
-      <div className="profile-header" data-aos="fade-up" data-aos-delay="100" data-aos-duration="300">
-        <img data-aos="flip-left" data-aos-delay="800" data-aos-duration="300" className="profile-pic" src="./profile.jpg" alt="Foto de perfil" />
-        <div className="profile-info">
-          <span className="profile-name">Gonzalo Sánchez</span>
-          <span className="profile-email">gonzalo@email.com</span>
-        </div>
-      </div>
+        {error && <p className="login-error">{error}</p>}
+        {success && <p className="login-success">{success}</p>}
 
-      {/* --- Opciones del Perfil --- */}
-      <div className="profile-options">
-        <button className="profile-btn" data-aos="fade-up" data-aos-delay="200" data-aos-duration="300">Cambiar foto de perfil</button>
-        <button className="profile-btn" data-aos="fade-up" data-aos-delay="300" data-aos-duration="300">Modificar rutina</button>
-        <button className="profile-btn" data-aos="fade-up" data-aos-delay="400" data-aos-duration="300">Modificar dieta</button>
-        <button className="profile-btn" data-aos="fade-up" data-aos-delay="500" data-aos-duration="300">Cambiar contraseña</button>
-        <button className="profile-btn" data-aos="fade-up" data-aos-delay="600" data-aos-duration="300">Opciones de notificación</button>
-        <button className="profile-btn logout-btn" data-aos="fade-up" data-aos-delay="700" data-aos-duration="300">Cerrar sesión</button>
-      </div>
+        <label className="login-label">Usuario</label>
+        <input
+          type="text"
+          className="login-input"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+        />
 
-      {/* --- Información adicional --- */}
-      <div className="profile-extra">
-        <h3 data-aos="fade-up" data-aos-delay="800" data-aos-duration="300">Progreso</h3>
-        <p data-aos="fade-up" data-aos-delay="900" data-aos-duration="300">Peso actual: 75 kg</p>
-        <p data-aos="fade-up" data-aos-delay="1000" data-aos-duration="300">Objetivo: Definición</p>
+        <label className="login-label">Contraseña</label>
+        <input
+          type="password"
+          className="login-input"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
 
-        <h3 data-aos="fade-up" data-aos-delay="1100" data-aos-duration="300">Suscripción</h3>
-        <p data-aos="fade-up" data-aos-delay="1200" data-aos-duration="300">Plan: Premium</p>
-        <p data-aos="fade-up" data-aos-delay="1300" data-aos-duration="300">Vence el: 15/12/2025</p>
-      </div>
+        <button type="submit" className="login-button" disabled={loading}>
+          {loading ? "Iniciando..." : "Ingresar"}
+        </button>
+      </form>
     </div>
   );
 };
