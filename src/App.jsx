@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import ScrollToTop from "./components/ScrollToTop";
 import Navbar from "./components/Navbar";
 import Inicio from "./pages/Inicio/Inicio";
 import Welcome from "./pages/welcome/Welcome";
@@ -38,7 +39,9 @@ const AppContent = () => {
           paddingBottom: window.innerWidth < 768 && !hideNavbar ? "50px" : "0",
         }}
       >
+        <ScrollToTop />
         <Routes>
+          
           <Route path="/" element={<Inicio />} />
           <Route path="/login" element={<Login />} />
           <Route path="/welcome" element={<Welcome />} />

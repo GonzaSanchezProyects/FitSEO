@@ -114,10 +114,9 @@ const NutritionForm = () => {
         </div>
 
         <div className="botones">
-            <button onClick={handleGenerar} disabled={loading}>
-            {loading ? "Generando..." : "Generar con IA"}
-            </button>
+  
             <div className="botones-dieta">
+                <button type="button" onClick={handleLimpiar}>Generar con ia</button>
                 <button type="button" onClick={handleLimpiar}>Limpiar</button>
            </div>
         </div>  
