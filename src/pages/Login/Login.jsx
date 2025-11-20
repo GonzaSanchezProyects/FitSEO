@@ -2,12 +2,16 @@ import React, { useState } from "react";
 import "./Login.css";
 
 const Login = () => {
-  const [username, setUsername] = useState(""); // input controlado
-  const [password, setPassword] = useState(""); // input controlado
-  const [role, setRole] = useState("SUPER_ADMIN"); // rol por defecto
+  const [login, setLogin] = useState("");  // 👉 usa "login" como pide el backend
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState(""); // nuevo estado para mensaje de éxito
+  const [success, setSuccess] = useState("");
+
+  // ---------------------------------------------------------
+  // CONFIG: URL de Azure actualizada
+  // ---------------------------------------------------------
+  const API_URL = "https://crmgym-api-test-czbbe4hkdpcaaqhk.chilecentral-01.azurewebsites.net/api/auth/login";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -16,29 +20,52 @@ const Login = () => {
     setSuccess("");
 
     try {
-      const response = await fetch(
-        "https://crmgym-backend-production.up.railway.app/api/auth/login",
-        {
+      const response = await fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username, password, role }),
+          body: JSON.stringify({
+            login,        // 👉 campo correcto requerido por swagger
+            password      // 👉 campo correcto requerido por swagger
+          }),
         }
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Credenciales incorrectas");
+        // Intentamos leer el mensaje de error del servidor
+        const errorData = await response.json().catch(() => ({})); 
+        throw new Error(errorData.message || "Credenciales incorrectas o error en el servidor");
       }
 
       const data = await response.json();
+      
+      // DEBUG: Ver qué nos devuelve el login exactamente
+      console.log("Login exitoso, datos recibidos:", data);
 
-      // Guardar token
-      localStorage.setItem("crmToken", data.token || data.accessToken);
+      // 1. Guardar token JWT
+      // A veces viene como 'token', a veces como 'accessToken'
+      const token = data.token || data.accessToken;
+      if (token) {
+        localStorage.setItem("crmToken", token);
+      }
 
-      // Mostrar mensaje de éxito
-      setSuccess("¡Inicio de sesión exitoso ✅!");
+      // 2. Buscar el ID del usuario para usarlo en otros formularios
+      // Intentamos varias propiedades comunes por si acaso
+      const userId = data.id || data.userId || data.clientId || (data.user && data.user.id) || null;
 
-      // Redirigir después de 1.5 segundos
+      // 3. Guardar datos del usuario en localStorage
+      localStorage.setItem(
+        "userData",
+        JSON.stringify({
+          login,
+          isAuthenticated: true,
+          id: userId, // IMPORTANTE: Guardamos el ID para que RoutinesForm lo encuentre
+          role: data.role || "user", // Si el backend manda rol, guardarlo
+          loginTime: new Date().toISOString(),
+        })
+      );
+
+      setSuccess("¡Inicio de sesión exitoso!");
+
       setTimeout(() => {
         window.location.href = "/inicio";
       }, 1500);
@@ -59,12 +86,12 @@ const Login = () => {
         {error && <p className="login-error">{error}</p>}
         {success && <p className="login-success">{success}</p>}
 
-        <label className="login-label">Usuario</label>
+        <label className="login-label">Usuario o Email</label>
         <input
           type="text"
           className="login-input"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          value={login}
+          onChange={(e) => setLogin(e.target.value)}
           required
         />
 

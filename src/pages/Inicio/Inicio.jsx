@@ -4,8 +4,19 @@ import * as am5 from "@amcharts/amcharts5";
 import * as am5percent from "@amcharts/amcharts5/percent";
 import * as am5xy from "@amcharts/amcharts5/xy";
 import am5themes_Animated from "@amcharts/amcharts5/themes/Animated";
+import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 const Inicio = () => {
+
+  const navigate = useNavigate();
+    useEffect(() => {
+          const userData = JSON.parse(localStorage.getItem("userData"));
+          if (!userData?.isAuthenticated) {
+            navigate("/login");
+          }
+    }, [navigate]);
+
   const userName = "Gonzalo";
 
   // --- REFS ---

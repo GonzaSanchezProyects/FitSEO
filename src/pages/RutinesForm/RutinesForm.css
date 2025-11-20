@@ -1,18 +1,21 @@
-.formContainer{
+.formContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 1.5rem;
-  font-family: 'Poppins';
+  font-family: 'Poppins', sans-serif;
   gap: 2rem;
-  background: #126782;
+  background: rgb(18,103,130);
   background: linear-gradient(90deg, rgba(18,103,130,1) 54%, rgba(18,117,148,1) 78%, rgba(18,129,163,1) 100%);  
-  height: 850px;
+  /* Cambiamos height por min-height para que si la dieta es larga, la pagina crezca y no corte el contenido */
+  min-height: 850px; 
+  height: auto;
 }
 
 .form-rutina {
   color: #081a2df3;
   max-width: 500px;
+  width: 100%;
   padding: 20px;
   border-radius: 12px;
   background-color: #f9f9f9;
@@ -25,6 +28,12 @@
   margin-bottom: 20px;
   font-size: 1.5rem;
   font-weight: 600; 
+}
+
+.form-rutina h3, .form-rutina h4 {
+  color: #126782;
+  margin-top: 15px;
+  margin-bottom: 10px;
 }
 
 .campo {
@@ -44,6 +53,7 @@
   padding: 8px;
   border-radius: 6px;
   border: 1px solid #ccc;
+  font-family: 'Poppins', sans-serif;
 }
 
 textarea {
@@ -55,6 +65,7 @@ textarea {
   display: flex;
   justify-content: space-between;
   gap: 10px;
+  margin-top: 20px;
 }
 
 button {
@@ -66,8 +77,38 @@ button {
   padding: 10px;
   cursor: pointer;
   font-weight: bold;
+  transition: background-color 0.3s;
 }
 
 button:hover {
   background-color: #005ecc;
+}
+
+/* Estilos específicos para etiquetas de la dieta */
+.diet-tag-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* Reutilizamos modified-badge para las alertas de la dieta */
+.modified-badge {
+  display: inline-block;
+  background: #ffe9e6;
+  color: #b22222;
+  border-radius: 6px;
+  padding: 2px 6px;
+  font-size: 11px;
+  margin-left: 8px;
+  vertical-align: middle;
+  border: 1px solid rgba(178,34,34,0.15);
+}
+
+.meal-card {
+    background: #fff;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }

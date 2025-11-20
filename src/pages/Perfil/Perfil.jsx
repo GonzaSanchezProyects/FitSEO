@@ -1,6 +1,9 @@
 import "./Perfil.css";
+import { useNavigate } from "react-router-dom";
 
 const Perfil = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="profile-section-container">
       <h2 data-aos="fade-up" data-aos-delay="0" data-aos-duration="300">Mi Perfil</h2>
@@ -17,8 +20,28 @@ const Perfil = () => {
       {/* --- Opciones del Perfil --- */}
       <div className="profile-options">
         <button className="profile-btn" data-aos="fade-up" data-aos-delay="200" data-aos-duration="300">Cambiar foto de perfil</button>
-        <button className="profile-btn" data-aos="fade-up" data-aos-delay="300" data-aos-duration="300">Modificar rutina</button>
-        <button className="profile-btn" data-aos="fade-up" data-aos-delay="400" data-aos-duration="300">Modificar dieta</button>
+
+        {/* Redirecciones */}
+        <button
+          className="profile-btn"
+          data-aos="fade-up"
+          data-aos-delay="300"
+          data-aos-duration="300"
+          onClick={() => navigate("/rutinesForm")}
+        >
+          Modificar rutina
+        </button>
+
+        <button
+          className="profile-btn"
+          data-aos="fade-up"
+          data-aos-delay="400"
+          data-aos-duration="300"
+          onClick={() => navigate("/nutritionForm")}
+        >
+          Modificar dieta
+        </button>
+
         <button className="profile-btn" data-aos="fade-up" data-aos-delay="500" data-aos-duration="300">Cambiar contraseña</button>
         <button className="profile-btn" data-aos="fade-up" data-aos-delay="600" data-aos-duration="300">Opciones de notificación</button>
         <button className="profile-btn logout-btn" data-aos="fade-up" data-aos-delay="700" data-aos-duration="300">Cerrar sesión</button>
