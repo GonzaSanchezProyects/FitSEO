@@ -1,145 +1,192 @@
+/* --- BARRA DE NAVEGACIÓN PRINCIPAL (Glassmorphism) --- */
 .app-nav {
   position: fixed;
   width: 100%;
-  background-color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.2);
-  z-index: 100;
-  height: 60px;
-  left: 0;
+  height: 75px; /* Un poco más alta para dar respiro en mobile */
   bottom: 0;
-  padding: 0 25px;
-  gap: 6.5rem;
-}
-.nav-group a{
-  width: 60px;
+  left: 0;
+  z-index: 1000;
+  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px;
+  box-sizing: border-box;
+
+  /* Efecto Cristal */
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border-top: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255,255,255,0.6);
 }
 
 /* 🔹 GRUPOS IZQ / DER */
 .nav-group {
   display: flex;
-  gap: 20px;
+  gap: 10px;
+  flex: 1;
 }
 
-.app-nav a {
-  color: #126782;
+/* Dejamos el hueco perfecto en el medio para el botón QR */
+.nav-group.left { justify-content: flex-start; padding-right: 30px; }
+.nav-group.right { justify-content: flex-end; padding-left: 30px; }
+
+/* 🔹 ITEMS DE NAVEGACIÓN */
+.nav-item {
+  color: #64748B; /* Gris azulado (muted) */
   text-decoration: none;
   display: flex;
   flex-direction: column;
   align-items: center;
-  font-size: 0.8rem;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  width: 65px;
+  padding: 8px 0;
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.app-nav a svg {
-  font-size: 1.5rem;
+.nav-icon {
+  font-size: 1.3rem;
+  margin-bottom: 4px;
+  transition: transform 0.3s ease;
 }
 
-.app-nav a.active {
-  color: white;
-  background-color: #126782;
-  border-radius: 10px;
-  padding: 5px 10px;
+/* Hover/Touch sutil */
+.nav-item:hover {
+  color: #334155;
 }
 
-/* 🔵 BOTÓN QR CENTRAL */
-.qr-button {
+/* 🔹 ESTADO ACTIVO (Glass Pill) */
+.nav-item.active {
+  color: #2563EB; /* Azul Royal */
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.8), 0 4px 10px rgba(0,0,0,0.03);
+  transform: translateY(-2px);
+}
+
+.nav-item.active .nav-icon {
+  transform: scale(1.15);
+  filter: drop-shadow(0 2px 4px rgba(37, 99, 235, 0.3));
+}
+
+
+/* 🔵 BOTÓN QR CENTRAL (Flotante Premium) */
+.qr-button-wrapper {
   position: absolute;
   left: 50%;
-  transform: translateX(-50%) translateY(-20%);
+  top: -25px; /* Sobresale hacia arriba */
+  transform: translateX(-50%);
+  z-index: 1001;
 }
 
-.qr-button a {
-  background: linear-gradient(90deg, #126782 54%, #128da3 100%);
-  color: white;
-  border-radius: 50%;
-  width: 65px;
-  height: 65px;
+.qr-link {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  transition: transform 0.2s ease;
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  text-decoration: none;
+  color: white;
+  
+  /* Degradado azul vibrante */
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  border: 4px solid rgba(255, 255, 255, 0.5); /* Borde de cristal */
+  background-clip: padding-box;
+  
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4), inset 1px 1px 2px rgba(255,255,255,0.4);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.qr-button a:hover {
-  transform: translateY(-2px) scale(1.1);
-}
-
-.qr-button svg {
+.qr-link svg {
   font-size: 1.8rem;
 }
 
-/* 🟢 BURBUJA DE INICIO (flotante sobre el navbar, derecha) */
-.home-bubble {
-  position: absolute;
-  right: 35px;
-  bottom: 70px; /* 🔼 flotando arriba del navbar */
+.qr-link:hover, .qr-link.active {
+  transform: scale(1.08);
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.5), inset 1px 1px 2px rgba(255,255,255,0.4);
+  background: linear-gradient(135deg, #2563EB 0%, #1e3a8a 100%);
 }
 
-.home-bubble a {
-  background: linear-gradient(90deg, #128da3 54%, #12a7c0 100%);
-  color: white;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
+
+/* 🟢 BURBUJA DE INICIO (Flotante derecha) */
+.home-bubble {
+  position: fixed;
+  right: 20px;
+  bottom: 95px; /* Flotando por encima del Navbar */
+  z-index: 999;
+}
+
+.bubble-link {
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  transition: transform 0.2s ease;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  text-decoration: none;
+  color: #2563EB;
+  
+  /* Cristal Esmerilado Fuerte */
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08), inset 1px 1px 2px rgba(255,255,255,0.6);
+  
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.home-bubble a:hover {
-  transform: translateY(-3px) scale(1.1);
+.bubble-link svg {
+  font-size: 1.6rem;
 }
 
-.home-bubble svg {
-  font-size: 1.7rem;
+.bubble-link:hover, .bubble-link.active {
+  transform: translateY(-4px) scale(1.05);
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.1), inset 1px 1px 2px rgba(255,255,255,0.9);
 }
 
-/* ✅ ESTILO DESKTOP */
+
+/* ✅ AJUSTES PARA PANTALLAS MÁS ANCHAS (Tablets/Desktop) */
 @media (min-width: 768px) {
   .app-nav {
     top: 0;
     bottom: auto;
     padding: 0 80px;
+    height: 70px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05), inset 0 -1px 0 rgba(255,255,255,0.6);
+    border-top: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.6);
   }
 
-  .qr-button {
-    transform: translateX(-50%) translateY(0);
+  .qr-button-wrapper {
+    top: 50%;
+    transform: translate(-50%, -50%);
   }
 
-  .qr-button a {
+  .qr-link {
     width: 55px;
     height: 55px;
+    border-width: 3px;
   }
+  
+  .qr-link svg { font-size: 1.5rem; }
 
   .home-bubble {
-    bottom: auto;
-    top: 65px; /* 🔼 flotante sobre la barra superior */
+    bottom: 30px; 
+    top: auto; 
   }
+}
 
-  .home-bubble a {
-    width: 55px;
-    height: 55px;
-  }
-}
-@media(max-width: 400px) {
-  .app-nav {
-  position: fixed;
-  width: 100%;
-  background-color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  box-shadow: 0 -2px 6px rgba(0, 0, 0, 0.2);
-  z-index: 100;
-  height: 60px;
-  left: 0;
-  bottom: 0;
-  padding: 0 25px;
-  gap: 4.5rem;
-}
+/* ✅ AJUSTE PARA TELÉFONOS MUY CHICOS (ej: iPhone SE) */
+@media(max-width: 380px) {
+  .nav-group { gap: 2px; }
+  .nav-group.left { padding-right: 25px; }
+  .nav-group.right { padding-left: 25px; }
+  .nav-item { width: 55px; font-size: 0.65rem; }
+  .qr-link { width: 55px; height: 55px; }
 }

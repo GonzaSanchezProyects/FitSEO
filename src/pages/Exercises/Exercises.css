@@ -1,57 +1,313 @@
 /* =========================================
-   LAYOUT GENERAL
+   LAYOUT GENERAL (Glassmorphism & Bento)
    ========================================= */
+
+/* Usamos la misma clase contenedora que en el dashboard para mantener el ancho, padding inferior y evitar el scroll roto */
 .exercises-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 1.5rem;
-  font-family: 'Poppins', sans-serif;
-  gap: 2rem;
-  background: linear-gradient(90deg, #126782 54%, #127594 78%, #1281a3 100%);
-  min-height: 100vh;
+  gap: 1.5rem;
 }
 
-/* ... (Títulos, Card, Acordeón - Igual que antes) ... */
-.card { background: #fff; border-radius: 10px; padding: 1.5rem; width: 100%; box-shadow: 0 5px 10px rgba(0,0,0,0.24); margin-bottom: 1rem; }
-.custom-accordion { background-color: #0f172a !important; color: white !important; border-radius: 12px !important; width: 100%; margin: 0.8rem auto; box-shadow: none !important; }
-.accordion-summary { padding: 0 10px !important; }
-.expand-icon { color: white !important; }
-.accordion-details { color: #a1a1aa; font-size: 0.9rem; padding: 1rem; }
+/* Encabezado */
+.ExerciseH2 {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
 
-/* ... (Checkbox Animado - Igual que antes) ... */
-.checkbox-wrapper { position: relative; width: 45px; height: 45px; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.ExerciseH2 h2 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin: 0;
+  letter-spacing: -0.01em;
+  color: var(--text-main);
+  text-shadow: 0 2px 10px rgba(255,255,255,0.6);
+}
+
+/* --- UI ELEMENTS (Barras y Selects de Cristal) --- */
+.day-selector {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 1.1rem;
+  font-weight: 700;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230F172A' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.2em;
+}
+
+.day-selector:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.8);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+.daily-progress {
+  background: rgba(15, 23, 42, 0.05);
+  height: 24px;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  margin-top: 5px;
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 24px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+}
+
+.progress-bar-new {
+  background: linear-gradient(90deg, var(--accent-success) 0%, #34D399 100%);
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  transition: width 0.5s ease-out;
+  border-radius: 12px;
+}
+
+/* BOTÓN REINICIO MANUAL */
+.reset-week-btn {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent-primary);
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  transition: all 0.3s;
+}
+
+.reset-week-btn:hover {
+  background: white;
+  transform: rotate(180deg);
+  color: var(--text-main);
+}
+
+
+/* =========================================
+   BENTO CARDS (Bloques Musculares)
+   ========================================= */
+.card {
+  background: var(--glass-bg);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow), var(--glass-reflection);
+  border-radius: var(--radius-bento);
+  padding: 1.5rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.exerciseTitle {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  padding-bottom: 0.8rem;
+}
+
+.card h3 {
+  font-size: 1.3rem;
+  color: var(--text-main);
+  font-weight: 800;
+  margin: 0;
+  text-transform: capitalize;
+  letter-spacing: -0.01em;
+}
+
+.iconExercise { 
+  height: 2.5rem; 
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+}
+
+
+/* =========================================
+   ACORDEÓN (Ejercicios)
+   ========================================= */
+.custom-accordion {
+  background-color: rgba(255, 255, 255, 0.5) !important;
+  color: var(--text-main) !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  width: 100%;
+  margin: 0.8rem 0 !important; /* Forza márgenes en MUI */
+  box-shadow: 0 4px 10px rgba(0,0,0,0.02), inset 0 2px 4px rgba(255,255,255,0.4) !important;
+  backdrop-filter: blur(10px);
+}
+.custom-accordion::before { display: none; } /* Quita línea divisoria de MUI */
+
+.accordion-summary { 
+  padding: 0 12px !important;
+  min-height: 64px !important; /* Más alto para toque fácil */
+}
+
+.accordion-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+.expand-icon { 
+  color: var(--text-muted) !important; 
+}
+
+.accordion-details { 
+  background-color: rgba(255, 255, 255, 0.3);
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
+  border-radius: 0 0 16px 16px;
+  padding: 1.2rem !important; 
+}
+
+
+/* --- TEXTOS DEL EJERCICIO --- */
+.header-info { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 2px;
+}
+
+.ex-name { 
+  font-weight: 800; 
+  font-size: 1.05rem; 
+  color: var(--text-main); 
+  transition: 0.3s; 
+}
+
+.ex-meta { 
+  font-size: 0.85rem; 
+  font-weight: 600;
+  color: var(--text-muted); 
+}
+
+/* Estado Completado */
+.exercise-done .ex-name {
+  text-decoration: line-through;
+  color: var(--text-muted);
+  opacity: 0.6;
+}
+.exercise-done .ex-meta { opacity: 0.5; }
+
+
+/* =========================================
+   CHECKBOX ANIMADO (Manteniendo el SVG)
+   ========================================= */
+.checkbox-wrapper {
+  position: relative;
+  width: 45px;
+  height: 45px;
+  flex-shrink: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .checkbox-wrapper input[type="checkbox"] { display: none; }
-.label-svg { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; }
+
+.label-svg {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .label-svg svg { width: 40px; height: 40px; }
-.checkbox-wrapper .path1 { stroke-dasharray: 400; stroke-dashoffset: 400; transition: stroke-dashoffset 0.5s ease-in-out; opacity: 0; stroke: #4caf50; }
-.checkbox-wrapper rect { stroke: #94a3b8; transition: stroke 0.3s ease; }
-.checkbox-wrapper input:checked + .label-svg .path1 { stroke-dashoffset: 0; opacity: 1; }
-.checkbox-wrapper input:checked + .label-svg rect { stroke: #4caf50; }
 
-/* --- TEXTOS Y CONTENIDO --- */
-.header-info { display: flex; flex-direction: column; }
-.ex-name { font-weight: 600; font-size: 1rem; color: #f1f5f9; transition: 0.3s; }
-.ex-meta { font-size: 0.85rem; color: #94a3b8; }
-.exercise-done .ex-name { text-decoration: line-through; color: #64748b; opacity: 0.7; }
+.checkbox-wrapper .path1 {
+  stroke-dasharray: 400;
+  stroke-dashoffset: 400;
+  transition: stroke-dashoffset 0.5s ease-in-out;
+  opacity: 0;
+  stroke: var(--accent-success); /* Verde Success */
+}
 
-.details-content { display: flex; flex-direction: column; width: 100%; }
+.checkbox-wrapper rect {
+  stroke: #94A3B8;
+  transition: stroke 0.3s ease;
+}
+
+.checkbox-wrapper input:checked + .label-svg .path1 {
+  stroke-dashoffset: 0;
+  opacity: 1;
+}
+
+.checkbox-wrapper input:checked + .label-svg rect {
+  stroke: var(--accent-success);
+}
+
+
+/* =========================================
+   DETALLES CONTENIDO (Dentro del Acordeón)
+   ========================================= */
+.details-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
 .text-container { width: 100%; }
 
-.exercise-desc { color: #e2e8f0; margin-bottom: 15px; line-height: 1.6; font-size: 0.95rem; }
+.exercise-desc { 
+  color: var(--text-main); 
+  margin-bottom: 15px; 
+  line-height: 1.5; 
+  font-size: 0.95rem; 
+  font-weight: 500;
+}
 
+/* TIPS */
 .exercise-tips {
-  background-color: #1e293b; padding: 15px; border-radius: 8px; 
-  border-left: 4px solid #38bdf8; margin-bottom: 20px;
+  background-color: rgba(15, 23, 42, 0.04); 
+  padding: 15px; 
+  border-radius: 12px; 
+  border-left: 4px solid var(--accent-primary); 
+  margin-bottom: 20px;
 }
 .exercise-tips strong { 
-  color: #38bdf8; display: block; margin-bottom: 8px; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.5px;
+  color: var(--accent-primary); 
+  display: block; 
+  margin-bottom: 8px; 
+  font-size: 0.85rem; 
+  text-transform: uppercase; 
+  letter-spacing: 0.5px;
+  font-weight: 800;
+}
+.exercise-tips ul {
+  padding-left: 1rem;
+  margin: 0;
 }
 .exercise-tips li { 
-  color: #cbd5e1; margin-bottom: 6px; padding-left: 5px;
+  color: var(--text-main); 
+  margin-bottom: 6px; 
+  font-weight: 500;
+  font-size: 0.9rem;
 }
 
-/* --- NUEVA BOTONERA (2 Botones) --- */
+/* =========================================
+   BOTONERA (YouTube y EresFitness)
+   ========================================= */
 .buttons-row {
   display: flex;
   gap: 12px;
@@ -65,344 +321,37 @@
   justify-content: center;
   gap: 8px;
   padding: 12px 16px;
-  border-radius: 8px;
-  font-weight: 600;
+  border-radius: 12px;
+  font-weight: 700;
   font-size: 0.9rem;
   text-decoration: none;
-  transition: all 0.3s ease;
-  flex: 1; /* Ocupan 50% cada uno */
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex: 1; 
   min-width: 140px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 .btn-icon { font-size: 22px !important; }
 
-/* Estilo YouTube (Rojo) */
+/* Botón YouTube (Vidrio tintado rojo) */
 .btn-youtube {
-  background: linear-gradient(145deg, #ef4444, #dc2626);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.9) 0%, rgba(220, 38, 38, 1) 100%);
   color: white;
-  border: 1px solid #b91c1c;
+  border: 1px solid #F87171;
+  box-shadow: 0 4px 10px rgba(220, 38, 38, 0.2), inset 1px 1px 2px rgba(255,255,255,0.4);
 }
 .btn-youtube:hover {
-  background: linear-gradient(145deg, #f87171, #ef4444);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+  box-shadow: 0 8px 20px rgba(220, 38, 38, 0.3), inset 1px 1px 2px rgba(255,255,255,0.4);
 }
 
-/* Estilo EresFitness (Azul Oscuro / Gris) */
+/* Botón EresFitness (Vidrio tintado oscuro) */
 .btn-eres {
-  background: linear-gradient(145deg, #334155, #1e293b);
-  color: #f8fafc;
+  background: linear-gradient(135deg, rgba(30, 41, 59, 0.9) 0%, rgba(15, 23, 42, 1) 100%);
+  color: white;
   border: 1px solid #475569;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.2), inset 1px 1px 2px rgba(255,255,255,0.2);
 }
 .btn-eres:hover {
-  background: linear-gradient(145deg, #475569, #334155);
   transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.3), inset 1px 1px 2px rgba(255,255,255,0.2);
 }
-
-/* UI Utils */
-.day-selector { margin-top: 10px; padding: 8px; border-radius: 8px; border: none; font-weight: 600; color: #126782; background: white; width: 100%; max-width: 200px; }
-.daily-progress { background: rgba(255,255,255,0.2); height: 24px; border-radius: 12px; position: relative; overflow: hidden; margin-top: 15px; text-align: center; font-size: 12px; font-weight: 600; color: white; line-height: 24px; border: 1px solid rgba(255,255,255,0.3); }
-.progress-bar-new { background: #4caf50; height: 100%; position: absolute; left: 0; top: 0; transition: width 0.5s; opacity: 0.8; }
-
-/* =========================================
-   LAYOUT GENERAL
-   ========================================= */
-.exercises-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 1.5rem;
-  font-family: 'Poppins', sans-serif;
-  gap: 2rem;
-  background: linear-gradient(90deg, #126782 54%, #127594 78%, #1281a3 100%);
-  min-height: 100vh;
-}
-
-.exercises-container h2 {
-  font-size: 2.25rem;
-  font-family: 'Inter', sans-serif;
-  font-weight: 600;
-  color: #fff;
-  width: 100%;
-  margin: 0;
-}
-
-.ExerciseH2 {
-  display: flex;
-  justify-content: start;
-  flex-direction: column;
-  width: 100%;
-}
-
-.card {
-  background: #fff;
-  border-radius: 10px;
-  padding: 1.5rem;
-  width: 100%;
-  box-shadow: 0 5px 10px rgba(0,0,0,0.24);
-  margin-bottom: 1rem;
-}
-
-.exerciseTitle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-.card h3 {
-  font-size: 1.5rem;
-  color: #002853;
-  text-align: center;
-  font-weight: 600;
-  margin: 0;
-  text-transform: capitalize;
-}
-
-/* --- ACORDEÓN --- */
-.custom-accordion {
-  background-color: #0f172a !important;
-  color: white !important;
-  border-radius: 12px !important;
-  width: 100%;
-  margin: 0.8rem auto;
-  box-shadow: none !important;
-}
-.custom-accordion::before { display: none; }
-
-.accordion-summary { 
-  padding: 0 10px !important;
-}
-.accordion-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  width: 100%;
-}
-.expand-icon { color: white !important; }
-.accordion-details { color: #a1a1aa; font-size: 0.9rem; padding: 1rem; }
-.iconExercise { height: 2rem; }
-
-
-/* --- CHECKBOX ANIMADO --- */
-.checkbox-wrapper {
-  position: relative;
-  width: 45px;
-  height: 45px;
-  flex-shrink: 0;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.checkbox-wrapper input[type="checkbox"] {
-  display: none; 
-}
-
-.label-svg {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.label-svg svg {
-  width: 40px;
-  height: 40px;
-}
-
-.checkbox-wrapper .path1 {
-  stroke-dasharray: 400;
-  stroke-dashoffset: 400;
-  transition: stroke-dashoffset 0.5s ease-in-out;
-  opacity: 0;
-  stroke: #4caf50;
-}
-
-.checkbox-wrapper rect {
-  stroke: #94a3b8;
-  transition: stroke 0.3s ease;
-}
-
-.checkbox-wrapper input:checked + .label-svg .path1 {
-  stroke-dashoffset: 0;
-  opacity: 1;
-}
-
-.checkbox-wrapper input:checked + .label-svg rect {
-  stroke: #4caf50;
-}
-
-/* --- TEXTOS --- */
-.header-info { display: flex; flex-direction: column; }
-.ex-name { font-weight: 600; font-size: 1rem; color: #f1f5f9; transition: 0.3s; }
-.ex-meta { font-size: 0.85rem; color: #94a3b8; }
-
-.exercise-done .ex-name {
-  text-decoration: line-through;
-  color: #64748b;
-  opacity: 0.7;
-}
-
-/* --- DETALLES CONTENIDO --- */
-.details-content {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.text-container {
-  width: 100%;
-}
-
-/* TIPS Y DESCRIPCIÓN */
-.exercise-desc { 
-  color: #e2e8f0; margin-bottom: 15px; line-height: 1.6; font-size: 0.95rem;
-}
-
-.exercise-tips {
-  background-color: #1e293b; padding: 15px; border-radius: 8px; 
-  border-left: 4px solid #38bdf8; margin-bottom: 20px;
-}
-.exercise-tips strong { 
-  color: #38bdf8; display: block; margin-bottom: 8px; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px;
-}
-.exercise-tips li { 
-  color: #cbd5e1; margin-bottom: 6px; padding-left: 5px;
-}
-
-/* --- BOTONERA NUEVA --- */
-.buttons-row {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  width: 100%;
-}
-
-.btn-action {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.9rem;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  flex: 1; /* Ambos ocupan el mismo ancho */
-  min-width: 140px;
-}
-
-.btn-icon { font-size: 20px !important; }
-
-/* Botón YouTube */
-.btn-youtube {
-  background-color: #ef4444;
-  color: white;
-  border: 1px solid #dc2626;
-}
-.btn-youtube:hover {
-  background-color: #dc2626;
-  transform: translateY(-2px);
-}
-
-/* Botón EresFitness */
-.btn-eres {
-  background-color: #334155;
-  color: #f1f5f9;
-  border: 1px solid #475569;
-}
-.btn-eres:hover {
-  background-color: #475569;
-  transform: translateY(-2px);
-}
-
-
-/* --- UI ELEMENTS (Barras y Selects) --- */
-.day-selector {
-  margin-top: 10px; padding: 8px; border-radius: 8px; border: none;
-  font-weight: 600; color: #126782; background: white; width: 100%; max-width: 200px;
-}
-.daily-progress {
-  background: rgba(255,255,255,0.2); height: 24px; border-radius: 12px;
-  position: relative; overflow: hidden; margin-top: 15px; text-align: center;
-  font-size: 12px; font-weight: 600; color: white; line-height: 24px;
-  border: 1px solid rgba(255,255,255,0.3);
-}
-.progress-bar-new {
-  background: #4caf50; height: 100%; position: absolute; left: 0; top: 0; transition: width 0.5s; opacity: 0.8;
-}
-
-/* Botón EresFitness (Estilo Web) */
-.eres-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: #1f2937; /* Gris oscuro profesional */
-  color: #f3f4f6;
-  text-decoration: none;
-  padding: 8px 14px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 0.85rem;
-  transition: all 0.3s ease;
-  border: 1px solid #374151;
-  flex: 1;
-  justify-content: center;
-  min-width: 140px;
-}
-
-.eres-link:hover {
-  background: #374151;
-  border-color: #4b5563;
-}
-
-/* --- TEXTOS Y TIPS --- */
-.exercise-tips {
-  background-color: #1e293b; padding: 12px; border-radius: 8px; border-left: 4px solid #38bdf8; margin-top: 10px;
-}
-.exercise-tips strong { color: #38bdf8; display: block; margin-bottom: 5px; font-size: 0.95rem; }
-.exercise-tips li { color: #cbd5e1; margin-bottom: 4px; }
-.exercise-desc { color: #e2e8f0; margin-bottom: 10px; line-height: 1.5; text-align: left; width: 100%; }
-
-/* ... (Resto de estilos checkbox y cards igual) ... */
-.card {
-  background: #fff;
-  border-radius: 10px;
-  padding: 1.5rem;
-  width: 100%;
-  box-shadow: 0 5px 10px rgba(0,0,0,0.24);
-  margin-bottom: 1rem;
-}
-
-/* ... (Estilos previos iguales) ... */
-
-/* --- BOTÓN REINICIO MANUAL (HEADER) --- */
-.reset-week-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  cursor: pointer;
-  transition: background 0.3s;
-  margin-left: 10px;
-}
-
-.reset-week-btn:hover {
-  background: rgba(255, 255, 255, 0.4);
-  transform: rotate(180deg);
-  transition: transform 0.5s, background 0.3s;
-}
-
-/* ... (Resto de la botonera y acordeón igual que en el paso anterior) ... */

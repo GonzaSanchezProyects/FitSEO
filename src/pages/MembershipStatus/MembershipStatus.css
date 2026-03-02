@@ -1,119 +1,254 @@
-
-.quota-container {
+/* --- ENVOLTORIO PRINCIPAL --- */
+.membership-wrapper {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 1.5rem;
-  font-family: 'Poppins';
-  gap: 2rem;
-  background: #126782;
-  background: linear-gradient(90deg, rgba(18,103,130,1) 54%, rgba(18,117,148,1) 78%, rgba(18,129,163,1) 100%);
-  height: 900px;
+  gap: 1.5rem;
+  justify-content: center;
 }
 
-.quota-container .titleMain {
-  font-size: 2rem;
-  font-family: 'Inter', sans-serif;
-  font-weight: 700;
-  color: #fff;
-  margin-bottom: 0.5rem;
-  text-align: start;
-  width: 100%;
-}
-
-.quota-status {
+/* --- TARJETA PRINCIPAL (Hero) --- */
+.status-hero-card {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-}
-
-.quota-status span {
-  font-size: 0.95rem;
-}
-
-.estado {
-  font-weight: 600;
-  font-size: 1rem;
-}
-
-.quota-status.pagada .estado {
-  color: rgb(0, 172, 0);
-  font-size: 1.2rem;
-}
-
-.quota-status.pendiente .estado {
-  color: orange;
-}
-
-.quota-status.vencida .estado {
-  color: red;
-}
-
-.progress-bar {
-  width: 100%;
-  height: 10px;
-  background: #ddd;
-  border-radius: 8px;
-  margin-top: 0.5rem;
+  align-items: space-between;
+  justify-content: space-between;
+  text-align: center;
+  padding: 3rem 1.8rem; /* Más aire superior e inferior */
+  position: relative;
   overflow: hidden;
 }
 
-.progress-fill {
-  border: 2px solid black;
-  height: 100%;
-  background: #0d4a5d;
-  border-radius: 8px;
-  transition: width 0.5s ease;
+.status-hero-card.pagada {
+  background: linear-gradient(135deg, rgba(209, 250, 229, 0.5) 0%, rgba(255, 255, 255, 0.3) 100%);
+  border-color: rgba(16, 185, 129, 0.4);
 }
 
-.previous-payments-container {
+.status-hero-card.pendiente {
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.5) 0%, rgba(255, 255, 255, 0.3) 100%);
+  border-color: rgba(245, 158, 11, 0.4);
+}
+
+.status-hero-card.vencida {
+  background: linear-gradient(135deg, rgba(254, 242, 242, 0.5) 0%, rgba(255, 255, 255, 0.3) 100%);
+  border-color: rgba(239, 68, 68, 0.4);
+}
+
+/* Badge de Estado */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 18px;
+  border-radius: 100px;
+  font-weight: 700; /* Ajustado de 800 a 700 */
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 0.8rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+
+.status-hero-card.pagada .status-badge { background: #D1FAE5; color: #047857; }
+.status-hero-card.pendiente .status-badge { background: #FEF3C7; color: #B45309; }
+.status-hero-card.vencida .status-badge { background: #FEE2E2; color: #B91C1C; }
+
+/* Monto Central Refinado */
+.monto-gigante {
+  font-size: 3.6rem; /* Un pelín más grande para que impacte */
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1;
+  letter-spacing: -0.02em;
+  margin-bottom: 2.5rem;
+  display: flex;
+  align-items: center; /* ACA ESTABA EL ERROR: Ahora se alinean al medio verticalmente */
+  justify-content: center;
+  transform: translateX(-12px); 
+  justify-content: center;
+  margin-left: 1.5rem;/* TRUCO ÓPTICO: Compensa el ancho del "$" para que el "500" quede en el centro perfecto de la pantalla */
+}
+
+.currency {
+  font-size: 1.8rem;
+  margin-top: 0; /* Eliminamos el margen superior que rompía el diseño */
+  margin-right: 8px;
+  color: var(--text-muted);
+  font-weight: 700;
+  transform: translateY(2px); /* Baja el símbolo $ un micro-pixel para que la base alinee perfecto con los números */
+}
+
+/* Fechas Info */
+.fechas-info {
+  display: flex;
   width: 100%;
-  max-width: 400px;
-  margin: 1rem auto;
-  padding: 1rem 1.5rem;
-  background: #f5f5f5;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-  font-family: 'Poppins', sans-serif;
+  margin-bottom: 2.5rem;
+  gap: 1rem;
+  display: flex;
+  justify-content: center;
 }
 
-.previous-payments-container h3 {
-  text-align: center;
-  margin-bottom: 1rem;
-  color: #126782;
+.fecha-box {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 1.2rem 1rem;
+  border-radius: 20px; /* Bordes más suaves */
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  text-align: left;
+  box-shadow: inset 0 2px 4px rgba(255,255,255,0.6);
 }
 
-.payment-card {
+.fecha-box.highlight {
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(255, 255, 255, 1);
+}
+
+.fecha-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.fecha-valor {
+  font-size: 1.05rem;
+  font-weight: 700; /* Suavizado */
+  color: var(--text-main);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.tiny-icon {
+  color: var(--accent-primary);
+  opacity: 0.8;
+  font-size: 1.1rem;
+}
+
+/* Barra de Progreso */
+.progress-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.progress-labels {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 0.6rem 1rem;
-  margin-bottom: 0.5rem;
-
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-.payment-date, .payment-amount, .payment-status {
-  font-size: 0.9rem;
-  color: black;
-}
-
-.payment-status {
+  font-size: 0.85rem;
   font-weight: 600;
-  padding: 0.2rem 0.5rem;
-  border-radius: 6px;
-  color: #fff;
+  color: var(--text-muted);
 }
 
-.payment-status.paid {
-  background-color: green;
+.glass-progress-bar {
+  width: 100%;
+  height: 14px; /* Un pelín más gruesa */
+  background: rgba(15, 23, 42, 0.05); 
+  border-radius: 100px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
 }
 
-.payment-status.pending {
-  background-color: orange;
+.glass-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-primary) 0%, #1D4ED8 100%);
+  border-radius: 100px;
+  transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.payment-status.overdue {
-  background-color: red;
+.status-hero-card.vencida .glass-progress-fill { background: #EF4444; }
+
+/* --- TARJETA DE HISTORIAL --- */
+.history-card {
+  padding: 1.8rem;
 }
+
+.section-subtitle {
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin: 0 0 1.5rem 5px;
+}
+
+.payment-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.payment-row {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1.2rem 0; /* Más espacio vertical entre filas */
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.payment-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.payment-icon-wrapper {
+  width: 46px;
+  height: 46px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 1);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  color: var(--accent-primary);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+}
+
+.payment-details {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 0.2rem;
+}
+
+.payment-title {
+  font-weight: 700;
+  color: var(--text-main);
+  font-size: 0.95rem;
+}
+
+.payment-date {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.payment-amount-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.payment-amount {
+  font-weight: 800;
+  font-size: 1.1rem;
+  color: var(--text-main);
+}
+
+.payment-pill {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 100px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.payment-pill.paid { background: #D1FAE5; color: #047857; }
+.payment-pill.pending { background: #FEF3C7; color: #B45309; }
+.payment-pill.overdue { background: #FEE2E2; color: #B91C1C; }

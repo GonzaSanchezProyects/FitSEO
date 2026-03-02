@@ -6,13 +6,12 @@ import { Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import YouTubeIcon from "@mui/icons-material/YouTube"; 
 import AutoStoriesIcon from "@mui/icons-material/AutoStories"; 
-import RestartAltIcon from "@mui/icons-material/RestartAlt"; // Icono para reinicio manual (opcional)
+import RestartAltIcon from "@mui/icons-material/RestartAlt"; 
 import { useNavigate } from "react-router-dom";
+// 👉 Importamos tu cliente de Supabase
+import { supabase } from "../../supabaseClient"; 
 
-/* ---------- CONFIG ---------- */
-const API_BASE_URL = "https://crmgym-api-test-czbbe4hkdpcaaqhk.chilecentral-01.azurewebsites.net";
-
-/* ---------- DICCIONARIO DE VIDEOS ---------- */
+/* ---------- DICCIONARIO DE VIDEOS (Fallback local) ---------- */
 const videoIds = {
   "Press inclinado mancuernas": "PqQ4AhX_WDI",
   "Aperturas inclinadas": "8WqHqA5tTQU",
@@ -40,7 +39,7 @@ const videoIds = {
   "Crunch": "MKmrqcoCZ-M"
 };
 
-/* ---------- INFO TEXTUAL ---------- */
+/* ---------- INFO TEXTUAL (Tips) ---------- */
 const exerciseLibrary = {
   default: { desc: "Ejecuta con Rango de Movimiento Completo (ROM).", tips: ["Controla la fase excéntrica.", "Evita la inercia."] },
   press: { desc: "Empuje horizontal/vertical. Estabilidad escapular clave.", tips: ["Retrae escápulas al bajar.", "Codos a 45º (no 90º).", "Pies firmes en el suelo."] },
@@ -71,77 +70,8 @@ const getExerciseInfo = (name) => {
   return info; 
 };
 
-const sanitizeId = (s) => String(s || "").replace(/\s+/g, "_").replace(/[^\w\-]/g, "").slice(0, 80);
-const shuffle = (arr) => {
-  const a = (arr || []).slice();
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-};
 
-/* ---------- POOLS ---------- */
-const pools = {
-  pecho_sup: [{name:"Press inclinado mancuernas"}, {name:"Aperturas inclinadas"}],
-  pecho_mid: [{name:"Press plano mancuernas"}, {name:"Press plano máquina"}],
-  pecho_inf: [{name:"Fondos asistidos"}, {name:"Press declinado"}],
-  espalda_altas: [{name:"Jalón al pecho"}, {name:"Remo en máquina"}],
-  espalda_baja: [{name:"Remo mancuerna"}, {name:"Extensiones espalda"}],
-  quads: [{name:"Prensa piernas"}, {name:"Sentadilla Globet"}],
-  femorales_gluteos: [{name:"Puente glúteos"}, {name:"Curl femoral"}],
-  gemelos: [{name:"Elevación talones sentado"}, {name:"Elevación talones pie"}],
-  deltoides: [{name:"Press hombros"}, {name:"Elevaciones laterales"}],
-  biceps: [{name:"Curl bíceps"}, {name:"Curl martillo"}],
-  triceps: [{name:"Extensión polea"}, {name:"Fondos"}],
-  core: [{name:"Plancha"}, {name:"Crunch"}],
-};
-
-const splits = {
-  2: [["pecho_mid", "espalda_altas", "quads", "femorales_gluteos", "deltoides", "biceps", "triceps", "core"], ["pecho_sup", "pecho_inf", "espalda_baja", "gemelos", "deltoides", "biceps", "triceps", "core"]],
-  3: [["pecho_sup", "pecho_mid", "deltoides", "triceps"], ["espalda_altas", "espalda_baja", "biceps", "core"], ["quads", "femorales_gluteos", "gemelos"]],
-  4: [["pecho_mid", "espalda_altas", "deltoides", "biceps"], ["quads", "femorales_gluteos", "core", "gemelos"], ["pecho_sup", "espalda_baja", "deltoides", "triceps"], ["quads", "femorales_gluteos", "core", "gemelos"]],
-  5: [["pecho_sup", "pecho_mid", "deltoides"], ["espalda_altas", "espalda_baja", "biceps"], ["quads", "femorales_gluteos", "gemelos"], ["pecho_mid", "espalda_altas", "deltoides"], ["biceps", "triceps", "core"]],
-};
-
-const weeklySetsBase = { principiante: 8, intermedio: 11, avanzado: 15 };
-const countSessions = (template) => { const c = {}; template.forEach(d => d.forEach(g => c[g] = (c[g]||0)+1)); return c; };
-const planForMuscle = (mKey, sPerWeek, level, age) => {
-  let wTarget = weeklySetsBase[level] || 10;
-  if (age>=65) wTarget = Math.round(wTarget*0.8);
-  const setsPerSession = Math.max(1, Math.round(wTarget/Math.max(1,sPerWeek)));
-  const setsPerEx = (level==="principiante"||age>=70) ? 2 : 3;
-  const exPerSession = Math.max(1, Math.ceil(setsPerSession/setsPerEx));
-  return { ejerciciosPorSesion: exPerSession, setsPerExercise: setsPerEx, repsRange: "8-12", rest: "60-90s", setsPerSession };
-};
-
-const generateRoutineFromParams = ({ age = 30, level = "principiante", daysPerWeek = 3 }) => {
-  const template = splits[daysPerWeek] || splits[3];
-  const result = {};
-  const daysMap = ["Lunes","Martes","Miércoles","Jueves","Viernes"];
-  const usedEx = new Set();
-
-  template.forEach((dayGroups, idx) => {
-    const dayName = daysMap[idx] || `Día ${idx+1}`;
-    const groupsObj = {};
-    dayGroups.forEach(gKey => {
-      const pool = pools[gKey];
-      if(!pool) return;
-      const plan = planForMuscle(gKey, countSessions(template)[gKey], level, age);
-      let candidates = shuffle(pool).filter(e => !usedEx.has(e.name));
-      if(candidates.length < plan.ejerciciosPorSesion) candidates = shuffle(pool);
-      const selected = candidates.slice(0, plan.ejerciciosPorSesion).map(ex => {
-        usedEx.add(ex.name);
-        return { ...ex, sets: plan.setsPerExercise, reps: plan.repsRange, rest: plan.rest };
-      });
-      groupsObj[gKey.replace("_", " ")] = selected;
-    });
-    result[dayName] = groupsObj;
-  });
-  return result;
-};
-
-/* ---------- COMPONENT ---------- */
+/* ---------- COMPONENTE PRINCIPAL ---------- */
 const Exercises = () => {
   const navigate = useNavigate();
   const [plan, setPlan] = useState(null);
@@ -150,38 +80,32 @@ const Exercises = () => {
   const [error, setError] = useState("");
   const mountedRef = useRef(true);
 
+  // Registro de completados
   const [completed, setCompleted] = useState(() => {
     try { return JSON.parse(localStorage.getItem("completedExercises_v4") || "{}"); } 
     catch { return {}; }
   });
 
-  // --- NUEVA LÓGICA DE REINICIO SEMANAL ---
+  // --- LÓGICA DE REINICIO SEMANAL ---
   const checkWeeklyReset = () => {
     const startDateStr = localStorage.getItem("weekStartDate");
     const now = new Date();
 
     if (!startDateStr) {
-      // Primera vez: Guardamos fecha de hoy como inicio
       localStorage.setItem("weekStartDate", now.toISOString());
     } else {
       const startDate = new Date(startDateStr);
       const diffTime = Math.abs(now - startDate);
-      const diffDays = diffTime / (1000 * 60 * 60 * 24); // Convertir ms a días
+      const diffDays = diffTime / (1000 * 60 * 60 * 24);
 
-      // Si pasaron 7 días o más...
       if (diffDays >= 7) {
-        // 1. Reiniciamos el estado local
         setCompleted({});
-        // 2. Reiniciamos el almacenamiento
         localStorage.setItem("completedExercises_v4", JSON.stringify({}));
-        // 3. Actualizamos la fecha de inicio a "hoy"
         localStorage.setItem("weekStartDate", now.toISOString());
-        console.log("Semana completada. Ejercicios reiniciados automáticamente.");
       }
     }
   };
 
-  // Función para forzar reinicio manual (Botón Extra)
   const handleManualReset = () => {
     if(window.confirm("¿Quieres reiniciar toda la semana y desmarcar todo?")) {
         setCompleted({});
@@ -190,43 +114,101 @@ const Exercises = () => {
     }
   };
 
+  // --- OBTENER RUTINA DESDE SUPABASE ---
+  const fetchRoutineFromDB = async () => {
+    setLoadingPlan(true);
+    setError("");
+
+    try {
+      // 1. Obtener usuario actual
+      const { data: authData } = await supabase.auth.getSession();
+      const userId = authData?.session?.user?.id;
+
+      if (!userId) {
+        setError("No has iniciado sesión.");
+        setLoadingPlan(false);
+        return;
+      }
+
+      // 2. Consulta relacional profunda a Supabase
+      // Traemos la rutina activa, sus días, los bloques de cada día y los ejercicios de cada bloque.
+      const { data: routine, error: dbError } = await supabase
+        .from('routines')
+        .select(`
+          id, name,
+          routine_days (
+            id, day_name, order_index,
+            muscle_blocks (
+              id, muscle_name, order_index,
+              exercises (
+                id, name, sets, reps, video_url
+              )
+            )
+          )
+        `)
+        .eq('user_id', userId)
+        .eq('is_active', true)
+        .single(); // Asumimos que solo hay 1 activa
+
+      if (dbError || !routine) {
+        // El usuario no tiene rutina generada
+        setPlan(null);
+        setLoadingPlan(false);
+        return;
+      }
+
+      // 3. Mapear datos al formato que espera la UI
+      const fetchedPlan = {};
+      
+      // Ordenamos los días (Lunes, Martes...)
+      const days = routine.routine_days.sort((a, b) => a.order_index - b.order_index);
+
+      days.forEach(day => {
+        const blocksObj = {};
+        // Ordenamos los bloques musculares (Pecho, Espalda...)
+        const blocks = day.muscle_blocks.sort((a, b) => a.order_index - b.order_index);
+        
+        blocks.forEach(block => {
+          // Guardamos los ejercicios (ya vienen como array)
+          blocksObj[block.muscle_name] = block.exercises.map(ex => ({
+            id: ex.id,
+            name: ex.name,
+            sets: ex.sets,
+            reps: ex.reps, // Acá ya viene "8-12 | Descanso: 60s" desde el formulario
+            video_url: ex.video_url
+          }));
+        });
+
+        fetchedPlan[day.day_name] = blocksObj;
+      });
+
+      setPlan(fetchedPlan);
+
+      // Si el día guardado en localStorage no existe en este plan, seleccionamos el primer día
+      const savedDay = localStorage.getItem("selectedDay");
+      if (!savedDay || !fetchedPlan[savedDay]) {
+        if (days.length > 0) {
+          setSelectedDay(days[0].day_name);
+          localStorage.setItem("selectedDay", days[0].day_name);
+        }
+      }
+
+    } catch (err) {
+      console.error("Error al obtener la rutina:", err);
+      setError("Hubo un problema al cargar tu rutina.");
+    } finally {
+      if (mountedRef.current) setLoadingPlan(false);
+    }
+  };
+
   useEffect(() => { 
     mountedRef.current = true; 
     AOS.init({duration:500}); 
-    
-    // Verificamos el reinicio apenas carga el componente
     checkWeeklyReset();
+    fetchRoutineFromDB();
 
     return () => { mountedRef.current = false; }; 
   }, []);
-
-  useEffect(() => {
-    (async () => {
-      setLoadingPlan(true);
-      try {
-        const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-        if (!userData?.isAuthenticated) { navigate("/login"); return; }
-        const lastClientStateId = localStorage.getItem("lastClientStateId");
-        let generated = null;
-        if (lastClientStateId) {
-            const token = localStorage.getItem("crmToken");
-            const res = await fetch(`${API_BASE_URL}/api/client-state/${lastClientStateId}`, {
-                headers: token ? { Authorization: `Bearer ${token}` } : {}
-            });
-            if (res.ok) {
-                const json = await res.json();
-                generated = generateRoutineFromParams({ age: json.age, level: json.level.toLowerCase(), daysPerWeek: json.daysPerWeek });
-            }
-        }
-        if (!generated) generated = generateRoutineFromParams({ age: 30, level: "principiante", daysPerWeek: 3 });
-        if (mountedRef.current) {
-            setPlan(generated);
-            if (!generated[selectedDay]) setSelectedDay(Object.keys(generated)[0]);
-            setLoadingPlan(false);
-        }
-      } catch (e) { setError("Error cargando rutina."); setLoadingPlan(false); }
-    })();
-  }, [navigate]);
 
   const toggleCompleted = (day, exId) => {
     setCompleted(prev => {
@@ -240,19 +222,26 @@ const Exercises = () => {
   };
 
   const getEresFitnessUrl = (exerciseName) => {
-    return `https://eresfitness.com/?s=${encodeURIComponent(exerciseName)}`;
+    // Quitamos la etiqueta "(Adaptado)" si existe para buscar mejor
+    const cleanName = exerciseName.replace("(Adaptado)", "").trim();
+    return `https://eresfitness.com/?s=${encodeURIComponent(cleanName)}`;
   };
 
-  const getYoutubeUrl = (name) => {
-    const id = videoIds[name];
+  const getYoutubeUrl = (ex) => {
+    // Si la DB tiene una URL guardada, la usamos
+    if (ex.video_url) return ex.video_url;
+    
+    // Fallback al diccionario local
+    const cleanName = ex.name.replace("(Adaptado)", "").trim();
+    const id = videoIds[cleanName];
     return id 
       ? `https://www.youtube.com/watch?v=${id}` 
-      : `https://www.youtube.com/results?search_query=${encodeURIComponent("técnica " + name + " short")}`;
+      : `https://www.youtube.com/results?search_query=${encodeURIComponent("técnica " + cleanName + " short")}`;
   };
 
   const renderExerciseDetails = (ex) => {
     const info = getExerciseInfo(ex.name);
-    const youtubeLink = getYoutubeUrl(ex.name);
+    const youtubeLink = getYoutubeUrl(ex);
     const eresFitnessLink = getEresFitnessUrl(ex.name);
 
     return (
@@ -278,22 +267,43 @@ const Exercises = () => {
     );
   };
 
-  if (loadingPlan) return <div style={{color:'white', padding:20, textAlign:'center'}}>Generando tu plan...</div>;
-  if (error) return <div style={{color:'white', padding:20, textAlign:'center'}}>{error}</div>;
-  if (!plan) return null;
+  // --- ESTADOS DE CARGA Y VACÍO ---
+  if (loadingPlan) return (
+    <div style={{color:'var(--text-main)', padding:'4rem 2rem', textAlign:'center', fontFamily:'inherit'}}>
+      <h2>Sincronizando...</h2>
+      <p>Obteniendo tu rutina desde la base de datos.</p>
+    </div>
+  );
+
+  if (error) return <div style={{color:'crimson', padding:20, textAlign:'center'}}>{error}</div>;
+  
+  if (!plan) return (
+    <div style={{color:'var(--text-main)', padding:'4rem 2rem', textAlign:'center', fontFamily:'inherit'}}>
+      <h2>Aún no tienes rutina</h2>
+      <p style={{marginBottom: '2rem'}}>Ve a tu Perfil y genera tu primer plan de entrenamiento personalizado.</p>
+      <button 
+        className="btn-primary" 
+        onClick={() => navigate('/rutinesForm')}
+        style={{padding: '12px 24px', borderRadius: '16px', background: 'var(--accent-primary)', color: 'white', border: 'none', fontWeight: 'bold'}}
+      >
+        Generar Rutina
+      </button>
+    </div>
+  );
 
   const exercisesForDay = plan[selectedDay] || {};
   const flatExercises = Object.values(exercisesForDay).flat();
-  const completedCount = flatExercises.filter((ex) => !!completed[selectedDay]?.[sanitizeId(ex.name)]).length;
+  // Ahora usamos el UUID que viene de la base de datos como llave única en lugar de sanitizeId
+  const completedCount = flatExercises.filter((ex) => !!completed[selectedDay]?.[ex.id]).length;
   const totalCount = flatExercises.length;
   const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
   return (
-    <div className="exercises-container">
+    <div className="exercises-container dashboard-container">
+      
       <div className="ExerciseH2" data-aos="fade-down">
         <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', width:'100%'}}>
-            <h2>Entrenamiento del Día</h2>
-            {/* Botón discreto para reiniciar manualmente si el usuario quiere */}
+            <h2>Entrenamiento</h2>
             <button onClick={handleManualReset} className="reset-week-btn" title="Reiniciar semana">
                 <RestartAltIcon />
             </button>
@@ -302,56 +312,60 @@ const Exercises = () => {
         <select
           value={selectedDay}
           onChange={(e) => { setSelectedDay(e.target.value); localStorage.setItem("selectedDay", e.target.value); }}
-          className="day-selector"
+          className="day-selector glass-select"
         >
           {Object.keys(plan).map(d => <option key={d} value={d}>{d}</option>)}
         </select>
+        
         <div className="daily-progress">
             <div className="progress-bar-new" style={{ width: `${progressPercent}%` }}></div>
             <div className="progress-bar-completed" style={{position:'relative', zIndex:2}}>{completedCount} / {totalCount} completados</div>
         </div>
       </div>
 
-      {Object.entries(exercisesForDay).map(([muscleGroup, groupExs]) => (
-        <div key={muscleGroup} className="card" data-aos="fade-up">
-          <div className="exerciseTitle">
-            <img className="iconExercise" src={`./${muscleGroup.toLowerCase().replace(/\s+/g, "")}.svg`} alt="" onError={(e)=>e.target.style.display='none'} />
-            <h3 style={{textTransform:'capitalize'}}>{muscleGroup}</h3>
-          </div>
+      <div className="bento-grid">
+        {Object.entries(exercisesForDay).map(([muscleGroup, groupExs]) => (
+          <div key={muscleGroup} className="card bento-card" data-aos="fade-up">
+            <div className="exerciseTitle">
+              <img className="iconExercise" src={`./${muscleGroup.toLowerCase().replace(/\s+/g, "")}.svg`} alt="" onError={(e)=>e.target.style.display='none'} />
+              <h3 style={{textTransform:'capitalize'}}>{muscleGroup}</h3>
+            </div>
 
-          <div className="exercise-cards">
-            {groupExs.map((ex) => {
-              const id = sanitizeId(ex.name);
-              const isDone = !!completed[selectedDay]?.[id];
+            <div className="exercise-cards">
+              {groupExs.map((ex) => {
+                const exId = ex.id; // Usamos el ID real de Supabase
+                const isDone = !!completed[selectedDay]?.[exId];
 
-              return (
-                <Accordion key={id} className="custom-accordion">
-                  <AccordionSummary expandIcon={<ExpandMoreIcon className="expand-icon" />}>
-                    <div className={`accordion-header ${isDone ? 'exercise-done' : ''}`}>
-                      <div className="checkbox-wrapper" onClick={(e) => { e.stopPropagation(); toggleCompleted(selectedDay, id); }}>
-                          <input type="checkbox" checked={isDone} readOnly />
-                          <div className="label-svg">
-                             <svg viewBox="0 0 95 95">
-                                 <rect x="30" y="20" width="50" height="50" fill="none" strokeWidth="5"></rect>
-                                 <g transform="translate(0,-952.36222)"><path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" fill="none" strokeWidth="5" className="path1" /></g>
-                             </svg>
-                          </div>
+                return (
+                  <Accordion key={exId} className="custom-accordion">
+                    <AccordionSummary expandIcon={<ExpandMoreIcon className="expand-icon" />}>
+                      <div className={`accordion-header ${isDone ? 'exercise-done' : ''}`}>
+                        <div className="checkbox-wrapper" onClick={(e) => { e.stopPropagation(); toggleCompleted(selectedDay, exId); }}>
+                            <input type="checkbox" checked={isDone} readOnly />
+                            <div className="label-svg">
+                               <svg viewBox="0 0 95 95">
+                                   <rect x="30" y="20" width="50" height="50" fill="none" strokeWidth="5"></rect>
+                                   <g transform="translate(0,-952.36222)"><path d="m 56,963 c -102,122 6,9 7,9 17,-5 -66,69 -38,52 122,-77 -7,14 18,4 29,-11 45,-43 23,-4" fill="none" strokeWidth="5" className="path1" /></g>
+                               </svg>
+                            </div>
+                        </div>
+                        <div className="header-info">
+                          <span className="ex-name">{ex.name}</span>
+                          {/* El campo reps en DB ya contiene el descanso, ej: "8-12 | Descanso: 60s" */}
+                          <span className="ex-meta">{ex.sets} x {ex.reps}</span>
+                        </div>
                       </div>
-                      <div className="header-info">
-                        <span className="ex-name">{ex.name}</span>
-                        <span className="ex-meta">{ex.sets} x {ex.reps} | {ex.rest}</span>
-                      </div>
-                    </div>
-                  </AccordionSummary>
-                  <AccordionDetails className="accordion-details">
-                    {renderExerciseDetails(ex)}
-                  </AccordionDetails>
-                </Accordion>
-              );
-            })}
+                    </AccordionSummary>
+                    <AccordionDetails className="accordion-details">
+                      {renderExerciseDetails(ex)}
+                    </AccordionDetails>
+                  </Accordion>
+                );
+              })}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };

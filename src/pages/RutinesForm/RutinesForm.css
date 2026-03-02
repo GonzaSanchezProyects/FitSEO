@@ -1,114 +1,323 @@
-.formContainer {
+/* --- ESTILOS GLASS PARA EL FORMULARIO DE RUTINAS --- */
+
+.rutinas-wrapper {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  padding: 1.5rem;
-  font-family: 'Poppins', sans-serif;
-  gap: 2rem;
-  background: rgb(18,103,130);
-  background: linear-gradient(90deg, rgba(18,103,130,1) 54%, rgba(18,117,148,1) 78%, rgba(18,129,163,1) 100%);  
-  /* Cambiamos height por min-height para que si la dieta es larga, la pagina crezca y no corte el contenido */
-  min-height: 850px; 
-  height: auto;
+  gap: 1.5rem;
 }
 
-.form-rutina {
-  color: #081a2df3;
-  max-width: 500px;
-  width: 100%;
-  padding: 20px;
-  border-radius: 12px;
-  background-color: #f9f9f9;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  text-align: start;
-}
-
-.form-rutina h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 1.5rem;
-  font-weight: 600; 
-}
-
-.form-rutina h3, .form-rutina h4 {
-  color: #126782;
-  margin-top: 15px;
-  margin-bottom: 10px;
-}
-
-.campo {
-  margin-bottom: 15px;
-}
-
-.campo label {
-  display: block;
-  font-weight: bold;
-  margin-bottom: 5px;
-}
-
-.campo input,
-.campo select,
-.campo textarea {
-  width: 100%;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-family: 'Poppins', sans-serif;
-}
-
-textarea {
-  resize: vertical;
-  min-height: 60px;
-}
-
-.botones {
+.glass-form {
   display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  margin-top: 20px;
+  flex-direction: column;
+  gap: 1.2rem;
 }
 
-button {
-  flex: 1;
-  background-color: #0077ff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  padding: 10px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s;
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-button:hover {
-  background-color: #005ecc;
+.form-group label, .subtitle-label {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-main);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-/* Estilos específicos para etiquetas de la dieta */
-.diet-tag-container {
+/* Inputs Premium iOS Style */
+.glass-input, .glass-select {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  color: var(--text-main);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  appearance: none; /* Quita flecha nativa del select para más limpieza */
+}
+
+.glass-select {
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23475569' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1em;
+  padding-right: 2.5rem;
+}
+
+.glass-input:focus, .glass-select:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.8);
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
+}
+
+/* --- CHIPS DE LESIONES --- */
+.lesiones-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 1.2rem;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: inset 0 2px 10px rgba(0,0,0,0.02);
+}
+
+.chips-grid {
   display: flex;
   flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chip-btn {
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(15, 23, 42, 0.1);
+  color: var(--text-muted);
+  padding: 10px 18px;
+  border-radius: 100px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: inherit;
+}
+
+.chip-btn:hover {
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-2px);
+}
+
+/* Estado activo del Chip (Rojo/Alerta suave) */
+.chip-btn.active {
+  background: #FEF2F2;
+  color: #DC2626;
+  border-color: #F87171;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.15);
+  font-weight: 700;
+}
+
+/* --- BOTONES --- */
+.btn-primary.generate-btn {
+  margin-top: 1rem;
+  background: linear-gradient(135deg, var(--accent-primary) 0%, #1D4ED8 100%);
+  color: white;
+  border: none;
+  padding: 16px;
+  border-radius: 16px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3), inset 1px 1px 1px rgba(255,255,255,0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-primary.generate-btn:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-main);
+  border: 1px solid rgba(15, 23, 42, 0.2);
+  padding: 12px;
+  border-radius: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.btn-secondary.outline {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(10px);
+}
+
+/* --- ALERTAS --- */
+.error-badge {
+  background: #FEF2F2;
+  color: #B91C1C;
+  padding: 12px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: 1px solid #FCA5A5;
+}
+
+/* TARJETA DE ADVERTENCIAS (Mejora visual profunda) */
+.warning-card {
+  display: flex;
+  gap: 15px;
+  align-items: flex-start;
+  /* Cristal Ámbar */
+  background: linear-gradient(135deg, rgba(254, 243, 199, 0.7) 0%, rgba(253, 230, 138, 0.4) 100%);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(252, 211, 77, 0.8);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px rgba(217, 119, 6, 0.1), inset 1px 1px 2px rgba(255,255,255,0.6);
+}
+
+.warning-icon { 
+  font-size: 1.8rem; 
+  filter: drop-shadow(0 2px 4px rgba(217, 119, 6, 0.3));
+}
+
+.warning-card strong {
+  color: #92400E;
+  font-size: 1.05rem;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.warning-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
   gap: 8px;
 }
 
-/* Reutilizamos modified-badge para las alertas de la dieta */
-.modified-badge {
-  display: inline-block;
-  background: #ffe9e6;
-  color: #b22222;
-  border-radius: 6px;
-  padding: 2px 6px;
-  font-size: 11px;
-  margin-left: 8px;
-  vertical-align: middle;
-  border: 1px solid rgba(178,34,34,0.15);
+.warning-card li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 0.9rem;
+  color: #92400E;
+  line-height: 1.4;
+  font-weight: 500;
 }
 
-.meal-card {
-    background: #fff;
-    border: 1px solid #eee;
-    border-radius: 8px;
-    padding: 10px;
-    margin-bottom: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+.warning-card li::before {
+  content: '•';
+  position: absolute;
+  left: 0;
+  color: #D97706;
+  font-weight: 900;
+  font-size: 1.2rem;
+  line-height: 1.2;
 }
+
+/* --- RESULTADOS DE RUTINA --- */
+.rutina-resultados-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.resultados-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 2px solid rgba(0,0,0,0.05);
+  padding-bottom: 10px;
+}
+
+.section-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.status-saving, .status-saved {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 100px;
+}
+.status-saving { background: #E0E7FF; color: #4338CA; }
+.status-saved { background: #D1FAE5; color: #047857; }
+
+.rutina-dias-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.dia-card {
+  padding: 0; 
+  overflow: hidden;
+}
+
+.dia-header {
+  background: rgba(255, 255, 255, 0.5);
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.6);
+}
+
+.dia-header h3 {
+  margin: 0;
+  color: var(--accent-primary);
+  font-weight: 800;
+}
+
+.dia-body { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; }
+
+.grupo-title {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin: 0 0 0.8rem 0;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.ejercicios-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.ejercicio-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.4);
+  padding: 12px 16px;
+  border-radius: 14px;
+  box-shadow: inset 0 2px 4px rgba(255,255,255,0.5);
+}
+
+.ejercicio-item.modified {
+  background: rgba(254, 243, 199, 0.5);
+  border: 1px solid rgba(252, 211, 77, 0.5);
+}
+
+.ejercicio-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.ejercicio-name {
+  font-weight: 700;
+  color: var(--text-main);
+  font-size: 1rem;
+}
+
+.ejercicio-details {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.badge-sust {
+  background: #F59E0B;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 6px;
+  letter-spacing: 1px;
+}
+
+.back-action { margin-top: 1rem; }

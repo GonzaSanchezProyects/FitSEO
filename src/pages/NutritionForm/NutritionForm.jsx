@@ -124,13 +124,6 @@ export default function NutritionForm() {
     } catch (e) { return ""; }
   };
 
-  useEffect(() => {
-    const userData = JSON.parse(localStorage.getItem("userData") || "null");
-    if (!userData?.isAuthenticated) {
-      navigate("/login");
-      return;
-    }
-  }, [navigate]);
 
   const normalizeDays = (days) => {
     const options = [3,5,7];

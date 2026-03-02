@@ -15,70 +15,75 @@ const Navbar = () => {
   const [active, setActive] = useState(location.pathname);
 
   return (
-    <nav className="app-nav" data-aos="fade-up" data-aos-delay="0" data-aos-offset="0" data-aos-duration="400">
-      {/* 🔹 LADO IZQUIERDO */}
-      <div className="nav-group left">
-        <Link
-          to="/exercises"
-          className={active === "/exercises" ? "active" : ""}
-          onClick={() => setActive("/exercises")}
-        >
-          <FaDumbbell />
-          <span>Ejercicios</span>
-        </Link>
-
-        <Link
-          to="/nutrition"
-          className={active === "/nutrition" ? "active" : ""}
-          onClick={() => setActive("/nutrition")}
-        >
-          <FaAppleAlt />
-          <span>Nutrición</span>
-        </Link>
-      </div>
-
-      <div className="qr-button">
-        <Link
-          to="/qr-reader"
-          className={active === "/qr-reader" ? "active" : ""}
-          onClick={() => setActive("/qr-reader")}
-        >
-          <FaQrcode />
-        </Link>
-      </div>
-
-      {/* 🔹 LADO DERECHO */}
-      <div className="nav-group right">
-        <Link
-          to="/membership"
-          className={active === "/membership" ? "active" : ""}
-          onClick={() => setActive("/membership")}
-        >
-          <FaCreditCard />
-          <span>Cuota</span>
-        </Link>
-
-        <Link
-          to="/perfil"
-          className={active === "/perfil" ? "active" : ""}
-          onClick={() => setActive("/perfil")}
-        >
-          <FaUser />
-          <span>Perfil</span>
-        </Link>
-      </div>
-
-      {/* 🟢 BURBUJA DE INICIO (arriba a la derecha) */}
-      <div className="home-bubble">
+    <>
+      {/* 🟢 BURBUJA DE INICIO (Separada del nav para que flote libremente) */}
+      <div className="home-bubble" data-aos="fade-in" data-aos-duration="600">
         <Link
           to="/"
-          className={active === "/" ? "active" : ""}
+          className={active === "/" ? "active bubble-link" : "bubble-link"}
           onClick={() => setActive("/")}
         >
           <FaHome />
         </Link>
       </div>
-    </nav>
+
+      {/* 🔵 NAVBAR GLASSMORPHISM */}
+      <nav className="app-nav" data-aos="fade-up" data-aos-delay="0" data-aos-offset="0" data-aos-duration="400">
+        
+        {/* LADO IZQUIERDO */}
+        <div className="nav-group left">
+          <Link
+            to="/exercises"
+            className={active === "/exercises" ? "active nav-item" : "nav-item"}
+            onClick={() => setActive("/exercises")}
+          >
+            <FaDumbbell className="nav-icon" />
+            <span>Ejercicios</span>
+          </Link>
+
+          <Link
+            to="/nutrition"
+            className={active === "/nutrition" ? "active nav-item" : "nav-item"}
+            onClick={() => setActive("/nutrition")}
+          >
+            <FaAppleAlt className="nav-icon" />
+            <span>Nutrición</span>
+          </Link>
+        </div>
+
+        {/* BOTÓN QR CENTRAL */}
+        <div className="qr-button-wrapper">
+          <Link
+            to="/qr-reader"
+            className={active === "/qr-reader" ? "active qr-link" : "qr-link"}
+            onClick={() => setActive("/qr-reader")}
+          >
+            <FaQrcode />
+          </Link>
+        </div>
+
+        {/* LADO DERECHO */}
+        <div className="nav-group right">
+          <Link
+            to="/membership"
+            className={active === "/membership" ? "active nav-item" : "nav-item"}
+            onClick={() => setActive("/membership")}
+          >
+            <FaCreditCard className="nav-icon" />
+            <span>Cuota</span>
+          </Link>
+
+          <Link
+            to="/perfil"
+            className={active === "/perfil" ? "active nav-item" : "nav-item"}
+            onClick={() => setActive("/perfil")}
+          >
+            <FaUser className="nav-icon" />
+            <span>Perfil</span>
+          </Link>
+        </div>
+      </nav>
+    </>
   );
 };
 
