@@ -241,7 +241,10 @@ export default function RoutinesForm() {
       setError("Ingresa una edad válida entre 15 y 100.");
       return;
     }
-    if (!splits[dias]) {
+    
+    // Aseguramos que dias sea tratado estrictamente como Número para evitar bugs en el generador
+    const diasNum = Number(dias);
+    if (!splits[diasNum]) {
       setError("Selecciona entre 2 y 5 días.");
       return;
     }
@@ -250,10 +253,15 @@ export default function RoutinesForm() {
     if (edadNum >= 80) Object.keys(capsPerFamily).forEach(k => capsPerFamily[k] = Math.max(1, Math.floor(capsPerFamily[k] * 0.5)));
     else if (edadNum >= 70) Object.keys(capsPerFamily).forEach(k => capsPerFamily[k] = Math.max(1, Math.floor(capsPerFamily[k] * 0.75)));
 
-    const template = splits[dias];
+    const template = splits[diasNum];
     const sessionsCount = countSessions(template);
-    const dayNamesMap = { 2:["Lunes","Jueves"], 3:["Lunes","Miércoles","Viernes"], 4:["Lunes","Martes","Jueves","Viernes"], 5:["Lunes","Martes","Miércoles","Jueves","Viernes"] };
-    const dayNames = dayNamesMap[dias];
+    const dayNamesMap = { 
+        2:["Lunes","Jueves"], 
+        3:["Lunes","Miércoles","Viernes"], 
+        4:["Lunes","Martes","Jueves","Viernes"], 
+        5:["Lunes","Martes","Miércoles","Jueves","Viernes"] 
+    };
+    const dayNames = dayNamesMap[diasNum];
 
     const resultado = [];
     const warnSet = new Set();
@@ -316,6 +324,7 @@ export default function RoutinesForm() {
           usedExerciseCountWeek[ex.name] = (usedExerciseCountWeek[ex.name] || 0) + 1;
         }
 
+        // Fallbacks por si faltaron ejercicios
         if (selected.length < take) {
           const fallbacks = [];
           if (safeByGroup[gKey] && safeByGroup[gKey].length) safeByGroup[gKey].forEach(s => fallbacks.push(s));
@@ -349,14 +358,13 @@ export default function RoutinesForm() {
     setRutina(resultado);
 
     // ------------------------------------------------------------------
-    // NUEVA LÓGICA: GUARDADO EN SUPABASE (Jerarquía Completa)
+    // GUARDADO EN SUPABASE (Con Eliminación Total Previa)
     // ------------------------------------------------------------------
     (async () => {
       setSaving(true);
       setSaveMessage("Guardando en la base de datos...");
 
       try {
-        // 1. Obtener usuario autenticado desde Supabase
         const { data: authData } = await supabase.auth.getSession();
         const userId = authData?.session?.user?.id;
 
@@ -366,13 +374,14 @@ export default function RoutinesForm() {
           return;
         }
 
-        // 2. Desactivar rutinas viejas para que esta sea la principal
+        // 1. ELIMINAR FISICAMENTE las rutinas anteriores. 
+        // (Asegurate de tener ON DELETE CASCADE en tu base de datos Supabase)
         await supabase
           .from('routines')
-          .update({ is_active: false })
+          .delete()
           .eq('user_id', userId);
 
-        // 3. Insertar la nueva rutina en 'routines'
+        // 2. Insertar la nueva rutina en 'routines'
         const { data: routineData, error: routineError } = await supabase
           .from('routines')
           .insert({
@@ -386,7 +395,7 @@ export default function RoutinesForm() {
         if (routineError) throw routineError;
         const routineId = routineData.id;
 
-        // 4. Insertar Días, Bloques Musculares y Ejercicios (Loops)
+        // 3. Insertar Días, Bloques Musculares y Ejercicios (Loops)
         for (let dIdx = 0; dIdx < resultado.length; dIdx++) {
           const day = resultado[dIdx];
           
@@ -421,21 +430,23 @@ export default function RoutinesForm() {
             if (blockError) throw blockError;
             const blockId = blockData.id;
 
-            // Formatear array de Ejercicios para insertar todos juntos ('exercises')
-            // Tu DB tiene las columnas: block_id, name, sets, reps, video_url
+            // Formatear array de Ejercicios
             const exercisesToInsert = group.ejercicios.map((ex) => ({
               block_id: blockId,
               name: ex.modified ? `${ex.name} (Adaptado)` : ex.name,
               sets: String(ex.sets), 
-              reps: `${ex.reps} | Descanso: ${ex.rest}`, // Juntamos reps y descanso porque la DB no tiene columna de rest
+              reps: `${ex.reps} | Descanso: ${ex.rest}`, 
               video_url: null 
             }));
 
-            const { error: exercisesError } = await supabase
-              .from('exercises')
-              .insert(exercisesToInsert);
-
-            if (exercisesError) throw exercisesError;
+            // Insertar si el grupo no está vacío (Evita errores de sintaxis en DB)
+            if (exercisesToInsert.length > 0) {
+                const { error: exercisesError } = await supabase
+                  .from('exercises')
+                  .insert(exercisesToInsert);
+    
+                if (exercisesError) throw exercisesError;
+            }
           }
         }
 

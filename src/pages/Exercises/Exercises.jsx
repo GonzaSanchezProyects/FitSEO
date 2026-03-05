@@ -6,12 +6,12 @@ import { Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import YouTubeIcon from "@mui/icons-material/YouTube"; 
 import AutoStoriesIcon from "@mui/icons-material/AutoStories"; 
-import RestartAltIcon from "@mui/icons-material/RestartAlt"; 
 import { useNavigate } from "react-router-dom";
-// 👉 Importamos tu cliente de Supabase
 import { supabase } from "../../supabaseClient"; 
+// 👉 Nuevos íconos para darle look premium
+import { FiActivity, FiRefreshCw, FiAlertCircle } from "react-icons/fi";
 
-/* ---------- DICCIONARIO DE VIDEOS (Fallback local) ---------- */
+/* ---------- DICCIONARIO DE VIDEOS ---------- */
 const videoIds = {
   "Press inclinado mancuernas": "PqQ4AhX_WDI",
   "Aperturas inclinadas": "8WqHqA5tTQU",
@@ -70,7 +70,6 @@ const getExerciseInfo = (name) => {
   return info; 
 };
 
-
 /* ---------- COMPONENTE PRINCIPAL ---------- */
 const Exercises = () => {
   const navigate = useNavigate();
@@ -80,24 +79,20 @@ const Exercises = () => {
   const [error, setError] = useState("");
   const mountedRef = useRef(true);
 
-  // Registro de completados
   const [completed, setCompleted] = useState(() => {
     try { return JSON.parse(localStorage.getItem("completedExercises_v4") || "{}"); } 
     catch { return {}; }
   });
 
-  // --- LÓGICA DE REINICIO SEMANAL ---
   const checkWeeklyReset = () => {
     const startDateStr = localStorage.getItem("weekStartDate");
     const now = new Date();
-
     if (!startDateStr) {
       localStorage.setItem("weekStartDate", now.toISOString());
     } else {
       const startDate = new Date(startDateStr);
       const diffTime = Math.abs(now - startDate);
       const diffDays = diffTime / (1000 * 60 * 60 * 24);
-
       if (diffDays >= 7) {
         setCompleted({});
         localStorage.setItem("completedExercises_v4", JSON.stringify({}));
@@ -114,13 +109,11 @@ const Exercises = () => {
     }
   };
 
-  // --- OBTENER RUTINA DESDE SUPABASE ---
   const fetchRoutineFromDB = async () => {
     setLoadingPlan(true);
     setError("");
 
     try {
-      // 1. Obtener usuario actual
       const { data: authData } = await supabase.auth.getSession();
       const userId = authData?.session?.user?.id;
 
@@ -130,8 +123,6 @@ const Exercises = () => {
         return;
       }
 
-      // 2. Consulta relacional profunda a Supabase
-      // Traemos la rutina activa, sus días, los bloques de cada día y los ejercicios de cada bloque.
       const { data: routine, error: dbError } = await supabase
         .from('routines')
         .select(`
@@ -148,43 +139,35 @@ const Exercises = () => {
         `)
         .eq('user_id', userId)
         .eq('is_active', true)
-        .single(); // Asumimos que solo hay 1 activa
+        .single(); 
 
       if (dbError || !routine) {
-        // El usuario no tiene rutina generada
         setPlan(null);
         setLoadingPlan(false);
         return;
       }
 
-      // 3. Mapear datos al formato que espera la UI
       const fetchedPlan = {};
-      
-      // Ordenamos los días (Lunes, Martes...)
       const days = routine.routine_days.sort((a, b) => a.order_index - b.order_index);
 
       days.forEach(day => {
         const blocksObj = {};
-        // Ordenamos los bloques musculares (Pecho, Espalda...)
         const blocks = day.muscle_blocks.sort((a, b) => a.order_index - b.order_index);
         
         blocks.forEach(block => {
-          // Guardamos los ejercicios (ya vienen como array)
           blocksObj[block.muscle_name] = block.exercises.map(ex => ({
             id: ex.id,
             name: ex.name,
             sets: ex.sets,
-            reps: ex.reps, // Acá ya viene "8-12 | Descanso: 60s" desde el formulario
+            reps: ex.reps, 
             video_url: ex.video_url
           }));
         });
-
         fetchedPlan[day.day_name] = blocksObj;
       });
 
       setPlan(fetchedPlan);
 
-      // Si el día guardado en localStorage no existe en este plan, seleccionamos el primer día
       const savedDay = localStorage.getItem("selectedDay");
       if (!savedDay || !fetchedPlan[savedDay]) {
         if (days.length > 0) {
@@ -206,7 +189,6 @@ const Exercises = () => {
     AOS.init({duration:500}); 
     checkWeeklyReset();
     fetchRoutineFromDB();
-
     return () => { mountedRef.current = false; }; 
   }, []);
 
@@ -222,16 +204,12 @@ const Exercises = () => {
   };
 
   const getEresFitnessUrl = (exerciseName) => {
-    // Quitamos la etiqueta "(Adaptado)" si existe para buscar mejor
     const cleanName = exerciseName.replace("(Adaptado)", "").trim();
     return `https://eresfitness.com/?s=${encodeURIComponent(cleanName)}`;
   };
 
   const getYoutubeUrl = (ex) => {
-    // Si la DB tiene una URL guardada, la usamos
     if (ex.video_url) return ex.video_url;
-    
-    // Fallback al diccionario local
     const cleanName = ex.name.replace("(Adaptado)", "").trim();
     const id = videoIds[cleanName];
     return id 
@@ -267,73 +245,104 @@ const Exercises = () => {
     );
   };
 
-  // --- ESTADOS DE CARGA Y VACÍO ---
+  // --- ESTADOS DE CARGA Y VACÍO (Premium) ---
   if (loadingPlan) return (
-    <div style={{color:'var(--text-main)', padding:'4rem 2rem', textAlign:'center', fontFamily:'inherit'}}>
-      <h2>Sincronizando...</h2>
-      <p>Obteniendo tu rutina desde la base de datos.</p>
+    <div className="dashboard-container exercises-container">
+      <div className="status-state-card fade-in">
+        <div className="spinner-wrapper">
+          <FiRefreshCw className="spinning-icon" />
+        </div>
+        <h2>Sincronizando...</h2>
+        <p>Obteniendo tu rutina desde la base de datos.</p>
+      </div>
     </div>
   );
 
-  if (error) return <div style={{color:'crimson', padding:20, textAlign:'center'}}>{error}</div>;
+  if (error) return (
+    <div className="dashboard-container exercises-container">
+      <div className="status-state-card error-card fade-in">
+        <div className="icon-wrapper error">
+          <FiAlertCircle />
+        </div>
+        <h2>Ocurrió un error</h2>
+        <p>{error}</p>
+        <button className="btn-primary glow-btn mt-2" onClick={fetchRoutineFromDB}>Reintentar</button>
+      </div>
+    </div>
+  );
   
-  if (!plan) return (
-    <div style={{color:'var(--text-main)', padding:'4rem 2rem', textAlign:'center', fontFamily:'inherit'}}>
-      <h2>Aún no tienes rutina</h2>
-      <p style={{marginBottom: '2rem'}}>Ve a tu Perfil y genera tu primer plan de entrenamiento personalizado.</p>
-      <button 
-        className="btn-primary" 
-        onClick={() => navigate('/rutinesForm')}
-        style={{padding: '12px 24px', borderRadius: '16px', background: 'var(--accent-primary)', color: 'white', border: 'none', fontWeight: 'bold'}}
-      >
-        Generar Rutina
-      </button>
+  if (!plan || Object.keys(plan).length === 0) return (
+    <div className="dashboard-container exercises-container">
+      <header className="dashboard-header fade-in">
+        <div>
+          <p className="greeting">Entrenamiento</p>
+          <h1 className="user-name">Sin Rutina</h1>
+        </div>
+      </header>
+
+      <div className="status-state-card empty-card slide-up">
+        <div className="icon-wrapper empty">
+          <FiActivity />
+        </div>
+        <h2>Aún no tienes rutina</h2>
+        <p>Tu plan de entrenamiento está vacío. Ve a tu perfil y genera uno personalizado basado en tus objetivos y experiencia.</p>
+        <button className="btn-primary glow-btn mt-2" onClick={() => navigate('/rutinesForm')}>
+          Generar mi Rutina
+        </button>
+      </div>
     </div>
   );
 
+  // --- RENDERIZADO DE LA RUTINA ---
   const exercisesForDay = plan[selectedDay] || {};
   const flatExercises = Object.values(exercisesForDay).flat();
-  // Ahora usamos el UUID que viene de la base de datos como llave única en lugar de sanitizeId
   const completedCount = flatExercises.filter((ex) => !!completed[selectedDay]?.[ex.id]).length;
   const totalCount = flatExercises.length;
   const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
   return (
-    <div className="exercises-container dashboard-container">
+    <div className="dashboard-container exercises-container">
       
-      <div className="ExerciseH2" data-aos="fade-down">
-        <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', width:'100%'}}>
-            <h2>Entrenamiento</h2>
-            <button onClick={handleManualReset} className="reset-week-btn" title="Reiniciar semana">
-                <RestartAltIcon />
-            </button>
+      <header className="dashboard-header fade-in">
+        <div>
+          <p className="greeting">Seguimiento diario</p>
+          <h1 className="user-name">Entrenamiento</h1>
         </div>
+      </header>
 
-        <select
-          value={selectedDay}
-          onChange={(e) => { setSelectedDay(e.target.value); localStorage.setItem("selectedDay", e.target.value); }}
-          className="day-selector glass-select"
-        >
-          {Object.keys(plan).map(d => <option key={d} value={d}>{d}</option>)}
-        </select>
+      {/* PANEL DE CONTROL DEL DÍA */}
+      <section className="bento-card day-control-panel slide-up">
+        <div className="day-control-header">
+          <select
+            value={selectedDay}
+            onChange={(e) => { setSelectedDay(e.target.value); localStorage.setItem("selectedDay", e.target.value); }}
+            className="day-selector glass-select"
+          >
+            {Object.keys(plan).map(d => <option key={d} value={d}>{d}</option>)}
+          </select>
+          <button onClick={handleManualReset} className="reset-week-btn" title="Reiniciar semana">
+              <FiRefreshCw />
+          </button>
+        </div>
         
         <div className="daily-progress">
             <div className="progress-bar-new" style={{ width: `${progressPercent}%` }}></div>
-            <div className="progress-bar-completed" style={{position:'relative', zIndex:2}}>{completedCount} / {totalCount} completados</div>
+            <div className="progress-bar-completed">{completedCount} / {totalCount} completados</div>
         </div>
-      </div>
+      </section>
 
+      {/* BLOQUES MUSCULARES */}
       <div className="bento-grid">
-        {Object.entries(exercisesForDay).map(([muscleGroup, groupExs]) => (
-          <div key={muscleGroup} className="card bento-card" data-aos="fade-up">
+        {Object.entries(exercisesForDay).map(([muscleGroup, groupExs], idx) => (
+          <div key={muscleGroup} className="bento-card muscle-block-card slide-up" style={{ animationDelay: `${0.1 + (idx * 0.1)}s` }}>
             <div className="exerciseTitle">
               <img className="iconExercise" src={`./${muscleGroup.toLowerCase().replace(/\s+/g, "")}.svg`} alt="" onError={(e)=>e.target.style.display='none'} />
-              <h3 style={{textTransform:'capitalize'}}>{muscleGroup}</h3>
+              <h3>{muscleGroup}</h3>
             </div>
 
             <div className="exercise-cards">
               {groupExs.map((ex) => {
-                const exId = ex.id; // Usamos el ID real de Supabase
+                const exId = ex.id; 
                 const isDone = !!completed[selectedDay]?.[exId];
 
                 return (
@@ -351,7 +360,6 @@ const Exercises = () => {
                         </div>
                         <div className="header-info">
                           <span className="ex-name">{ex.name}</span>
-                          {/* El campo reps en DB ya contiene el descanso, ej: "8-12 | Descanso: 60s" */}
                           <span className="ex-meta">{ex.sets} x {ex.reps}</span>
                         </div>
                       </div>
