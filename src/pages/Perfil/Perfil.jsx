@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import "./Perfil.css";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../supabaseClient"; 
-// Importamos íconos minimalistas 
 import { 
   FiTrendingUp, 
   FiCreditCard, 
@@ -86,9 +85,7 @@ const Perfil = () => {
     }
   };
 
-  // Función para abrir WhatsApp
   const handleSupportClick = () => {
-    // Reemplaza este número por el real del gimnasio/soporte
     const phoneNumber = "5492610000000"; 
     const message = "Hola, necesito ayuda con mi cuenta en la app.";
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
@@ -98,7 +95,7 @@ const Perfil = () => {
     return (
       <div className="dashboard-container profile-wrapper">
         <header className="dashboard-header fade-in">
-          <p className="greeting">Cargando...</p>
+          <p className="greeting">Cargando perfil...</p>
         </header>
       </div>
     );
@@ -107,7 +104,7 @@ const Perfil = () => {
   return (
     <div className="dashboard-container profile-wrapper">
       
-      {/* Header */}
+      {/* --- HEADER --- */}
       <header className="dashboard-header fade-in">
         <div>
           <p className="greeting">Ajustes de cuenta</p>
@@ -115,59 +112,63 @@ const Perfil = () => {
         </div>
       </header>
 
-      {/* --- TARJETA DE USUARIO --- */}
-      <section className="bento-card user-card slide-up" style={{ animationDelay: "0.1s" }}>
-        <div className="avatar-container">
-          <div className="avatar-initials">
-            {getInitials()}
+      <div className="bento-grid">
+        {/* --- TARJETA DE USUARIO --- */}
+        <section className="bento-card user-card slide-up" style={{ animationDelay: "0.1s" }}>
+          <div className="avatar-container">
+            <div className="avatar-initials">
+              {getInitials()}
+            </div>
+          </div>
+          <div className="user-info">
+            <h2 className="profile-name">{userData.firstName} {userData.lastName}</h2>
+            <p className="profile-email">{userData.email}</p>
+            <span className="badge-premium">Miembro Premium</span>
+          </div>
+        </section>
+
+        {/* --- TARJETAS DE ESTADÍSTICAS --- */}
+        <div className="profile-stats-grid slide-up" style={{ animationDelay: "0.2s" }}>
+          <div className="stat-box glass-box-inner">
+            <span className="stat-icon"><FiTrendingUp /></span>
+            <span className="stat-label">Peso Actual</span>
+            <span className="stat-value">{currentWeight} <small>kg</small></span>
+            <span className="stat-desc">En Seguimiento</span>
+          </div>
+
+          <div className="stat-box glass-box-inner clickable" onClick={() => navigate("/cuota")}>
+            <span className="stat-icon"><FiCreditCard /></span>
+            <span className="stat-label">Suscripción</span>
+            <span className="stat-value">Activa</span>
+            <span className="stat-desc">Vence: 15/12</span>
           </div>
         </div>
-        <div className="user-info">
-          <h2 className="profile-name">{userData.firstName} {userData.lastName}</h2>
-          <p className="profile-email">{userData.email}</p>
-          <span className="badge-premium">Miembro Premium</span>
-        </div>
-      </section>
 
-      {/* --- TARJETAS DE ESTADÍSTICAS --- */}
-      <div className="profile-stats-grid slide-up" style={{ animationDelay: "0.2s" }}>
-        
-        <div className="stat-box glass-box">
-          <span className="stat-icon"><FiTrendingUp /></span>
-          <span className="stat-label">Peso Actual</span>
-          <span className="stat-value">{currentWeight} <small>kg</small></span>
-          <span className="stat-desc">En Seguimiento</span>
-        </div>
+        {/* --- TARJETAS DE ACCIONES --- */}
+        <section className="bento-card actions-card slide-up" style={{ animationDelay: "0.3s" }}>
+          <h3 className="section-subtitle">Configuración y Ayuda</h3>
+          <div className="action-list">
+            <button className="glass-action-btn" onClick={() => navigate("/rutinesForm")}>
+              <div className="btn-icon-wrapper icon-blue"><FiActivity /></div>
+              <span className="btn-text">Generar nueva rutina</span>
+              <FiChevronRight className="arrow-icon" />
+            </button>
+            
+            <button className="glass-action-btn" onClick={() => navigate("/nutritionForm")}>
+              <div className="btn-icon-wrapper icon-orange"><FiPieChart /></div>
+              <span className="btn-text">Generar nueva dieta</span>
+              <FiChevronRight className="arrow-icon" />
+            </button>
 
-        <div className="stat-box glass-box" onClick={() => navigate("/cuota")} style={{cursor: "pointer"}}>
-          <span className="stat-icon"><FiCreditCard /></span>
-          <span className="stat-label">Suscripción</span>
-          <span className="stat-value">Activa</span>
-          <span className="stat-desc">Vence: 15/12</span>
-        </div>
-
+            {/* Agregamos el botón de WhatsApp que tenías preparado */}
+            <button className="glass-action-btn" onClick={handleSupportClick}>
+              <div className="btn-icon-wrapper icon-green"><FiMessageCircle /></div>
+              <span className="btn-text">Soporte por WhatsApp</span>
+              <FiChevronRight className="arrow-icon" />
+            </button>
+          </div>
+        </section>
       </div>
-
-      {/* --- TARJETAS DE ACCIONES --- */}
-      <section className="bento-card actions-card slide-up" style={{ animationDelay: "0.3s" }}>
-        
-        <h3 className="section-subtitle">Configuración de Planes</h3>
-        <div className="action-list">
-          <button className="glass-action-btn" onClick={() => navigate("/rutinesForm")}>
-            <span className="btn-icon"><FiActivity /></span>
-            <span className="btn-text">Generar nueva rutina</span>
-            <FiChevronRight className="arrow-icon" />
-          </button>
-          
-          <button className="glass-action-btn" onClick={() => navigate("/nutritionForm")}>
-            <span className="btn-icon"><FiPieChart /></span>
-            <span className="btn-text">Generar nueva dieta</span>
-            <FiChevronRight className="arrow-icon" />
-          </button>
-        </div>
-
-
-      </section>
 
       {/* --- BOTÓN DE CERRAR SESIÓN --- */}
       <div className="logout-container slide-up" style={{ animationDelay: "0.4s" }}>

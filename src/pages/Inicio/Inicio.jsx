@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // 👉 Importamos useNavigate para redirigir
 import "./Inicio.css";
-// 👉 Importamos tu cliente de Supabase
 import { supabase } from "../../supabaseClient"; 
-import { FiPlus, FiX, FiCamera } from "react-icons/fi";
-// 👉 Ajuste de ruta al componente QRScanner
-import QRScanner from "../../components/QRScanner"; 
+import { FiPlus, FiX, FiTrendingUp, FiTarget, FiCalendar, FiActivity } from "react-icons/fi";
 
 // --- HOOK PARA ANIMAR NÚMEROS ---
 const useCountUp = (endValue, duration = 1500, decimals = 0) => {
@@ -42,12 +40,12 @@ const MacroCapsule = ({ label, grams, totalKcal, calMultiplier, color, shadowCol
     <div className="nutrition-capsule" style={{ animationDelay: `${delay}s` }}>
       <div className="capsule-header">
         <span className="capsule-label">{label}</span>
-        <span className="capsule-value"><strong>{animatedGrams}g</strong> ({percentage.toFixed(0)}%)</span>
+        <span className="capsule-value"><strong>{animatedGrams}g</strong> <span className="opacity-70">({percentage.toFixed(0)}%)</span></span>
       </div>
       <div className="capsule-track">
         <div 
-          className="capsule-fill" 
-          style={{ width: `${percentage}%`, backgroundColor: color, boxShadow: `0 0 10px ${shadowColor}` }}
+          className="capsule-fill glow-effect" 
+          style={{ width: `${percentage}%`, backgroundColor: color, boxShadow: `0 0 12px ${shadowColor}` }}
         ></div>
       </div>
     </div>
@@ -93,7 +91,7 @@ const DynamicWeightChart = ({ data, targetWeight, onAddClick }) => {
           )}
         </div>
         <div className="weight-actions-group">
-          <div className="weight-goal">Meta: {targetWeight} kg</div>
+          <div className="weight-goal glass-badge">Meta: {targetWeight} kg</div>
           <button className="add-weight-btn" onClick={onAddClick} title="Actualizar peso">
             <FiPlus />
           </button>
@@ -159,6 +157,11 @@ const WeeklyActivity = ({ weekData }) => {
 
 // --- COMPONENTE PRINCIPAL ---
 const Inicio = () => {
+  const navigate = useNavigate(); // 👉 Inicializamos el hook de navegación
+
+  // 👉 Agregamos un estado de carga inicial para evitar parpadeos
+  const [isLoading, setIsLoading] = useState(true); 
+
   const [userName, setUserName] = useState("Gonzalo");
   const [dietStats, setDietStats] = useState({ kcal: 0, p: 0, c: 0, f: 0 });
   const [weightHistory, setWeightHistory] = useState([]);
@@ -173,7 +176,6 @@ const Inicio = () => {
   const [showWeightModal, setShowWeightModal] = useState(false);
   const [newWeightInput, setNewWeightInput] = useState("");
   const [isSavingWeight, setIsSavingWeight] = useState(false);
-  const [showQRScanner, setShowQRScanner] = useState(false); 
 
   // Utilidad para obtener el inicio de la semana (Lunes)
   const getStartOfWeek = () => {
@@ -189,7 +191,12 @@ const Inicio = () => {
     try {
       const { data: authData } = await supabase.auth.getSession();
       const userId = authData?.session?.user?.id;
-      if (!userId) return;
+      
+      // 👉 Validamos la sesión: Si no hay usuario, redirigimos a /login
+      if (!userId) {
+        navigate("/login");
+        return;
+      }
 
       const userData = JSON.parse(localStorage.getItem("userData") || "{}");
       if (userData.username || userData.first_name) setUserName(userData.first_name || userData.username);
@@ -233,11 +240,9 @@ const Inicio = () => {
           { day: "Jue", status: "future" }, { day: "Vie", status: "future" }, { day: "Sáb", status: "future" }, { day: "Dom", status: "future" }
         ];
 
-        // Marcar días pasados y hoy
         for (let i = 0; i < currentDayIndex; i++) newWeek[i].status = "missed";
         newWeek[currentDayIndex].status = "today";
 
-        // Marcar asistencias reales
         logs.forEach(log => {
           const logDate = new Date(log.check_in_time);
           const logDayIndex = logDate.getDay() === 0 ? 6 : logDate.getDay() - 1;
@@ -246,11 +251,17 @@ const Inicio = () => {
 
         setWeekAttendance(newWeek);
       }
-
-    } catch (err) { console.error("Error cargando el Dashboard:", err); }
+    } catch (err) { 
+      console.error("Error cargando el Dashboard:", err); 
+    } finally {
+      // 👉 Detenemos el estado de carga sin importar si hubo éxito o error
+      setIsLoading(false);
+    }
   };
 
-  useEffect(() => { fetchDashboardData(); }, []);
+  useEffect(() => { 
+    fetchDashboardData(); 
+  }, []);
 
   const handleSaveWeight = async () => {
     if (!newWeightInput || isNaN(newWeightInput)) return;
@@ -270,28 +281,49 @@ const Inicio = () => {
 
   const animatedCalories = useCountUp(dietStats.kcal, 2000);
 
+  // 👉 Mostramos una pantalla de carga mientras valida el login y trae la info
+  if (isLoading) {
+    return (
+      <main className="dashboard-container">
+        <header className="dashboard-header fade-in">
+          <p className="greeting">Cargando progreso...</p>
+        </header>
+      </main>
+    );
+  }
+
   return (
     <main className="dashboard-container">
+      {/* CABECERA LIMPIA Y ORDENADA */}
       <header className="dashboard-header fade-in">
-        <div>
-          <p className="greeting">Panel de progreso</p>
+        <p className="greeting">Panel de progreso</p>
+        <div className="header-title-row">
           <h1 className="user-name">Hola, {userName}</h1>
-        </div>
-        <div className="status-pill active glass-pill">
-          <div className="pulse-dot"></div>
-          Suscripción Activa
+          <div className="status-pill active glass-pill">
+            <div className="pulse-dot"></div>
+            Activa
+          </div>
         </div>
       </header>
 
       <div className="bento-grid">
+        
+        {/* 1. EVOLUCIÓN CORPORAL */}
         <section className="bento-card col-span-2 slide-up" style={{ animationDelay: "0.1s" }}>
-          <h2 className="card-title">Evolución Corporal</h2>
+          <h2 className="card-title">
+            <div className="title-icon icon-blue"><FiTrendingUp /></div>
+            Evolución Corporal
+          </h2>
           <DynamicWeightChart data={weightHistory} targetWeight={70.0} onAddClick={() => setShowWeightModal(true)} />
         </section>
 
+        {/* 2. NUTRICIÓN */}
         <section className="bento-card slide-up" style={{ animationDelay: "0.2s" }}>
           <div className="nutrition-header">
-            <h2 className="card-title">Objetivo Diario</h2>
+            <h2 className="card-title">
+              <div className="title-icon icon-orange"><FiTarget /></div>
+              Objetivo Diario
+            </h2>
             <span className="calories-left"><strong>{animatedCalories}</strong> kcal</span>
           </div>
           <div className="capsules-container">
@@ -301,29 +333,36 @@ const Inicio = () => {
           </div>
         </section>
 
-        {/* WIDGET DE ASISTENCIA CONECTADO A BASE DE DATOS */}
+        {/* 3. WIDGET DE ASISTENCIA */}
         <section className="bento-card col-span-2 slide-up" style={{ animationDelay: "0.3s" }}>
           <div className="header-split">
-            <div>
-              <h2 className="card-title">Tu Semana en el Gym</h2>
-              <span className="streak-badge glow-amber" style={{ display: 'inline-block', marginTop: '4px' }}>🔥 Asistencias: {streak}</span>
+            <h2 className="card-title">
+              <div className="title-icon icon-purple"><FiCalendar /></div>
+              Tu Semana
+            </h2>
+            <div className="streak-badge glow-amber" title="Racha de asistencias">
+              <span className="streak-icon">🔥</span>
+              <span className="streak-number">{streak}</span>
             </div>
-            <button className="btn-primary glow-btn" style={{ padding: '8px 16px', fontSize: '0.85rem', display: 'flex', gap: '6px' }} onClick={() => setShowQRScanner(true)}>
-              <FiCamera style={{ fontSize: '1.2rem' }}/> Escanear Acceso
-            </button>
           </div>
           <WeeklyActivity weekData={weekAttendance} />
         </section>
 
+        {/* 4. MÉTRICAS CLAVE */}
         <section className="bento-card summary-bento slide-up" style={{ animationDelay: "0.4s" }}>
-          <h2 className="card-title">Métricas Clave</h2>
+          <h2 className="card-title">
+            <div className="title-icon icon-green"><FiActivity /></div>
+            Métricas Clave
+          </h2>
           <div className="quick-stats-grid">
-            <div className="stat-box glass-box"><span className="stat-label">IMC</span><span className="stat-value">23.5</span><span className="stat-desc">Saludable</span></div>
-            <div className="stat-box glass-box"><span className="stat-label">Entrenamientos</span><span className="stat-value">{streak}</span><span className="stat-desc">Esta semana</span></div>
+            <div className="stat-box glass-box-inner"><span className="stat-label">IMC</span><span className="stat-value">23.5</span><span className="stat-desc">Saludable</span></div>
+            <div className="stat-box glass-box-inner"><span className="stat-label">Entrenos</span><span className="stat-value">{streak}</span><span className="stat-desc">Esta semana</span></div>
           </div>
         </section>
+        
       </div>
 
+      {/* MODAL DE PESO */}
       {showWeightModal && (
         <div className="glass-modal-overlay">
           <div className="glass-modal fade-in">
@@ -340,9 +379,6 @@ const Inicio = () => {
           </div>
         </div>
       )}
-
-      {/* 🔹 RENDERIZADO DEL ESCÁNER QR */}
-      {showQRScanner && <QRScanner onClose={() => setShowQRScanner(false)} />}
     </main>
   );
 };

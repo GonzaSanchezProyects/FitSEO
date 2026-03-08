@@ -6,9 +6,8 @@ import { Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import YouTubeIcon from "@mui/icons-material/YouTube"; 
 import AutoStoriesIcon from "@mui/icons-material/AutoStories"; 
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; // 👉 Ya estaba importado, ¡genial!
 import { supabase } from "../../supabaseClient"; 
-// 👉 Nuevos íconos para darle look premium
 import { FiActivity, FiRefreshCw, FiAlertCircle } from "react-icons/fi";
 
 /* ---------- DICCIONARIO DE VIDEOS ---------- */
@@ -117,10 +116,10 @@ const Exercises = () => {
       const { data: authData } = await supabase.auth.getSession();
       const userId = authData?.session?.user?.id;
 
+      // 👉 VALIDACIÓN DE RUTA: Si no hay usuario, mandamos al login inmediatamente
       if (!userId) {
-        setError("No has iniciado sesión.");
-        setLoadingPlan(false);
-        return;
+        navigate("/login");
+        return; // Cortamos la ejecución aquí
       }
 
       const { data: routine, error: dbError } = await supabase

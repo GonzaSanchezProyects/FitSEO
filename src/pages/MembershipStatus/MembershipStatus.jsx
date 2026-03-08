@@ -1,8 +1,35 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // 👉 Importamos useNavigate para la redirección
 import "./MembershipStatus.css";
+import { supabase } from "../../supabaseClient"; // 👉 Aseguramos usar tu cliente de Supabase
 import { FiCheckCircle, FiClock, FiAlertCircle, FiCalendar, FiDollarSign } from "react-icons/fi";
 
 const MembershipStatus = () => {
+  const navigate = useNavigate(); // 👉 Inicializamos el hook de navegación
+  const [isLoading, setIsLoading] = useState(true); // 👉 Estado de carga para evitar parpadeos
+
+  // 👉 Verificamos la sesión apenas carga la pantalla
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        // Si hay error o no hay sesión activa, mandamos al login
+        if (error || !session) {
+          navigate("/login");
+        } else {
+          // Si está logueado, quitamos el estado de carga y mostramos la pantalla
+          setIsLoading(false);
+        }
+      } catch (err) {
+        console.error("Error al verificar la sesión:", err);
+        navigate("/login");
+      }
+    };
+
+    checkAuth();
+  }, [navigate]);
+
   // Datos de ejemplo
   const cuota = {
     estado: "Pagada", // "Pagada", "Pendiente", "Vencida"
@@ -29,6 +56,17 @@ const MembershipStatus = () => {
     { fecha: "15/07/2025", monto: 500, estado: "paid" },
     { fecha: "15/06/2025", monto: 450, estado: "paid" },
   ];
+
+  // 👉 Pantalla de carga mientras se verifica el login
+  if (isLoading) {
+    return (
+      <div className="dashboard-container membership-wrapper">
+        <header className="dashboard-header fade-in">
+          <p className="greeting">Verificando suscripción...</p>
+        </header>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-container membership-wrapper">
