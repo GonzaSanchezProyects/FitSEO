@@ -55,7 +55,7 @@ const Navbar = () => {
         <div className="qr-button-wrapper">
           <Link
             to="/qr-reader"
-            className={active === "/qr-reader" ? "active qr-link" : "qr-link"}
+            className={active === "/" ? "active qr-link" : "qr-link"}
             onClick={() => setActive("/qr-reader")}
           >
             <FaQrcode />

@@ -28,7 +28,7 @@ export default function RoutinesForm() {
   const nivelMap = { principiante: "PRINCIPIANTE", intermedio: "INTERMEDIO", avanzado: "AVANZADO" };
 
   // ---------------------------
-  // Pools, utilidades y lógica (Generación)
+  // Pools, utilidades y lógica (Generación) - INTACTO
   // ---------------------------
   const pools = {
     pecho_sup: [
@@ -242,7 +242,6 @@ export default function RoutinesForm() {
       return;
     }
     
-    // Aseguramos que dias sea tratado estrictamente como Número para evitar bugs en el generador
     const diasNum = Number(dias);
     if (!splits[diasNum]) {
       setError("Selecciona entre 2 y 5 días.");
@@ -362,7 +361,7 @@ export default function RoutinesForm() {
     // ------------------------------------------------------------------
     (async () => {
       setSaving(true);
-      setSaveMessage("Guardando en la base de datos...");
+      setSaveMessage("Guardando y enviando a revisión...");
 
       try {
         const { data: authData } = await supabase.auth.getSession();
@@ -375,7 +374,6 @@ export default function RoutinesForm() {
         }
 
         // 1. ELIMINAR FISICAMENTE las rutinas anteriores. 
-        // (Asegurate de tener ON DELETE CASCADE en tu base de datos Supabase)
         await supabase
           .from('routines')
           .delete()
@@ -387,7 +385,7 @@ export default function RoutinesForm() {
           .insert({
             user_id: userId,
             name: `Plan Hipertrofia - ${nivelMap[nivel]}`,
-            is_active: true
+            is_active: false // 👉 AQUÍ ESTÁ EL CAMBIO: Se guarda como pendiente (false)
           })
           .select()
           .single();
@@ -395,7 +393,7 @@ export default function RoutinesForm() {
         if (routineError) throw routineError;
         const routineId = routineData.id;
 
-        // 3. Insertar Días, Bloques Musculares y Ejercicios (Loops)
+        // 3. Insertar Días, Bloques Musculares y Ejercicios
         for (let dIdx = 0; dIdx < resultado.length; dIdx++) {
           const day = resultado[dIdx];
           
@@ -439,7 +437,6 @@ export default function RoutinesForm() {
               video_url: null 
             }));
 
-            // Insertar si el grupo no está vacío (Evita errores de sintaxis en DB)
             if (exercisesToInsert.length > 0) {
                 const { error: exercisesError } = await supabase
                   .from('exercises')
@@ -450,7 +447,8 @@ export default function RoutinesForm() {
           }
         }
 
-        setSaveMessage("¡Rutina guardada exitosamente en tu perfil!");
+        // 👉 AQUÍ ESTÁ EL CAMBIO: Mensaje de éxito actualizado
+        setSaveMessage("¡Plan generado! Pendiente de aprobación por tu entrenador.");
 
       } catch (error) {
         console.error("Error guardando en Supabase:", error);
@@ -554,7 +552,7 @@ export default function RoutinesForm() {
           
           <div className="resultados-header slide-up" style={{ animationDelay: "0.2s" }}>
             <h2 className="section-title">Tu Plan Personalizado</h2>
-            {saving ? <span className="status-saving">Guardando perfil...</span> : (saveMessage && <span className="status-saved">{saveMessage}</span>)}
+            {saving ? <span className="status-saving">Enviando a revisión...</span> : (saveMessage && <span className="status-saved">{saveMessage}</span>)}
           </div>
 
           {warnings.length > 0 && (
