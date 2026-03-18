@@ -317,3 +317,9 @@ body::after {
   .bento-grid { display: grid; grid-template-columns: repeat(2, 1fr); }
   .col-span-2 { grid-column: span 2; }
 }
+
+.status-pill.inactive {
+  background: rgba(239, 68, 68, 0.1); /* Fondo rojito transparente */
+  color: #EF4444; /* Letra roja */
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}

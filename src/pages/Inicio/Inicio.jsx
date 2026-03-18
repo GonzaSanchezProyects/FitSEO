@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // 👉 Importamos useNavigate para redirigir
+import { useNavigate } from "react-router-dom"; 
 import "./Inicio.css";
 import { supabase } from "../../supabaseClient"; 
-import { FiPlus, FiX, FiTrendingUp, FiTarget, FiCalendar, FiActivity } from "react-icons/fi";
+import { FiPlus, FiX, FiTrendingUp, FiTarget, FiCalendar, FiActivity, FiAlertCircle } from "react-icons/fi";
 
 // --- HOOK PARA ANIMAR NÚMEROS ---
 const useCountUp = (endValue, duration = 1500, decimals = 0) => {
@@ -157,15 +157,17 @@ const WeeklyActivity = ({ weekData }) => {
 
 // --- COMPONENTE PRINCIPAL ---
 const Inicio = () => {
-  const navigate = useNavigate(); // 👉 Inicializamos el hook de navegación
+  const navigate = useNavigate(); 
 
-  // 👉 Agregamos un estado de carga inicial para evitar parpadeos
   const [isLoading, setIsLoading] = useState(true); 
 
   const [userName, setUserName] = useState("Gonzalo");
   const [dietStats, setDietStats] = useState({ kcal: 0, p: 0, c: 0, f: 0 });
   const [weightHistory, setWeightHistory] = useState([]);
   
+  // 👉 NUEVO ESTADO: Controla si el usuario está activo o no
+  const [isUserActive, setIsUserActive] = useState(true);
+
   // Asistencia dinámica
   const [weekAttendance, setWeekAttendance] = useState([
     { day: "Lun", status: "future" }, { day: "Mar", status: "future" }, { day: "Mié", status: "future" },
@@ -192,14 +194,31 @@ const Inicio = () => {
       const { data: authData } = await supabase.auth.getSession();
       const userId = authData?.session?.user?.id;
       
-      // 👉 Validamos la sesión: Si no hay usuario, redirigimos a /login
       if (!userId) {
         navigate("/login");
         return;
       }
 
-      const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-      if (userData.username || userData.first_name) setUserName(userData.first_name || userData.username);
+      // 👉 0. VALIDACIÓN DE ESTADO DEL USUARIO (ENABLED)
+      const { data: userInfo, error: userError } = await supabase
+        .from('users')
+        .select('first_name, enabled')
+        .eq('id', userId)
+        .single();
+
+      if (userError) throw userError;
+
+      if (userInfo.first_name) setUserName(userInfo.first_name);
+
+      // Leemos estrictamente el booleano enabled
+      const estaActivo = userInfo.enabled === true || String(userInfo.enabled).toLowerCase() === "true";
+      setIsUserActive(estaActivo);
+
+      // Si no está activo, detenemos la carga de datos del dashboard para ahorrar consultas
+      if (!estaActivo) {
+        setIsLoading(false);
+        return; 
+      }
 
       // 1. Dieta
       const { data: dietPlan } = await supabase.from('diet_plans').select('daily_meals ( breakfast, lunch, snack, dinner )').eq('user_id', userId).eq('is_active', true).single();
@@ -220,7 +239,10 @@ const Inicio = () => {
       // 2. Peso
       const { data: weights } = await supabase.from('weight_logs').select('weight, created_at').eq('user_id', userId).order('created_at', { ascending: true }); 
       if (weights && weights.length > 0) setWeightHistory(weights);
-      else if (userData.weight_kg) setWeightHistory([{ weight: userData.weight_kg, created_at: new Date().toISOString() }]);
+      else {
+          const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+          if (userData.weight_kg) setWeightHistory([{ weight: userData.weight_kg, created_at: new Date().toISOString() }]);
+      }
 
       // 3. ASISTENCIA DE LA SEMANA ACTUAL
       const startOfWeek = getStartOfWeek();
@@ -254,7 +276,6 @@ const Inicio = () => {
     } catch (err) { 
       console.error("Error cargando el Dashboard:", err); 
     } finally {
-      // 👉 Detenemos el estado de carga sin importar si hubo éxito o error
       setIsLoading(false);
     }
   };
@@ -281,7 +302,12 @@ const Inicio = () => {
 
   const animatedCalories = useCountUp(dietStats.kcal, 2000);
 
-  // 👉 Mostramos una pantalla de carga mientras valida el login y trae la info
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    localStorage.removeItem("userData");
+    navigate("/login");
+  };
+
   if (isLoading) {
     return (
       <main className="dashboard-container">
@@ -294,19 +320,22 @@ const Inicio = () => {
 
   return (
     <main className="dashboard-container">
-      {/* CABECERA LIMPIA Y ORDENADA */}
+      
+      {/* 👉 CABECERA CON ESTADO DINÁMICO */}
       <header className="dashboard-header fade-in">
         <p className="greeting">Panel de progreso</p>
         <div className="header-title-row">
           <h1 className="user-name">Hola, {userName}</h1>
-          <div className="status-pill active glass-pill">
-            <div className="pulse-dot"></div>
-            Activa
+          
+          {/* CARTELITO DINÁMICO: Verde si activo, Rojo si inactivo */}
+          <div className={`status-pill ${isUserActive ? 'active' : 'inactive'} glass-pill`}>
+            <div className="pulse-dot" style={{ backgroundColor: isUserActive ? '#10B981' : '#EF4444' }}></div>
+            {isUserActive ? 'Activo' : 'Inactivo'}
           </div>
         </div>
       </header>
 
-      <div className="bento-grid">
+      <div className="bento-grid" style={{ filter: !isUserActive ? 'blur(4px)' : 'none', pointerEvents: !isUserActive ? 'none' : 'auto' }}>
         
         {/* 1. EVOLUCIÓN CORPORAL */}
         <section className="bento-card col-span-2 slide-up" style={{ animationDelay: "0.1s" }}>
@@ -362,8 +391,28 @@ const Inicio = () => {
         
       </div>
 
+      {/* 👉 POPUP BLOQUEADOR PARA USUARIOS INACTIVOS */}
+      {!isUserActive && !isLoading && (
+        <div className="glass-modal-overlay" style={{ zIndex: 9999, backdropFilter: 'blur(8px)' }}>
+          <div className="glass-modal fade-in" style={{ textAlign: 'center', padding: '2rem' }}>
+            <FiAlertCircle size={48} color="#EF4444" style={{ marginBottom: '1rem', margin: '0 auto' }} />
+            <h3 style={{ color: '#EF4444', marginBottom: '0.5rem' }}>Suscripción Inactiva</h3>
+            <p style={{ color: '#9CA3AF', marginBottom: '1.5rem', lineHeight: '1.5' }}>
+              Tu acceso ha sido bloqueado porque tu plan se encuentra inactivo o vencido. Por favor, acércate a la recepción del gimnasio para regularizar tu situación.
+            </p>
+            <button 
+              className="btn-primary w-full" 
+              onClick={handleLogout} 
+              style={{ backgroundColor: '#EF4444', border: 'none' }}
+            >
+              Cerrar Sesión
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* MODAL DE PESO */}
-      {showWeightModal && (
+      {showWeightModal && isUserActive && (
         <div className="glass-modal-overlay">
           <div className="glass-modal fade-in">
             <button className="close-modal-btn" onClick={() => setShowWeightModal(false)}><FiX /></button>
