@@ -195,7 +195,7 @@ export default function NutritionForm() {
     }
   };
 
-  // --- LÓGICA DE GUARDADO EN SUPABASE (Adaptada a tu diagrama) ---
+  // --- LÓGICA DE GUARDADO EN SUPABASE ---
   const handleGenerate = async (e) => {
     e?.preventDefault();
     setWarnings([]);
@@ -221,6 +221,55 @@ export default function NutritionForm() {
         return;
       }
 
+      // 👉 1.5 GUARDADO DE ALERTAS MÉDICAS (Solo enfermedades, no dietas electivas)
+      if (hasConditions === "si" && conds.length > 0) {
+        
+        // Filtramos para ignorar vegano/vegetariano y quedarnos solo con lo médico
+        const condicionesMedicas = conds.filter(c => 
+          c === 'lactosa' || c === 'celiaca' || c === 'diabetes' || c === 'hipertension'
+        );
+
+        if (condicionesMedicas.length > 0) {
+          // Buscamos si ya tiene estas alertas guardadas para no duplicar (por nombre parcial)
+          const { data: existingAlerts } = await supabase
+            .from('medical_alerts')
+            .select('name')
+            .eq('user_id', userId);
+            
+          const alertasExistentesStr = (existingAlerts || []).map(a => a.name.toLowerCase());
+
+          const nuevasAlertas = [];
+
+          condicionesMedicas.forEach(cond => {
+            // Mapeamos el ID a un nombre más legible
+            let nombreAlerta = "";
+            let gravedad = "Media";
+            if (cond === "lactosa") nombreAlerta = "Intolerancia a la Lactosa";
+            if (cond === "celiaca") { nombreAlerta = "Celiaquía"; gravedad = "Alta"; }
+            if (cond === "diabetes") { nombreAlerta = "Diabetes"; gravedad = "Alta"; }
+            if (cond === "hipertension") { nombreAlerta = "Hipertensión"; gravedad = "Alta"; }
+
+            // Si no existe, la preparamos para insertar
+            if (!alertasExistentesStr.includes(nombreAlerta.toLowerCase())) {
+              nuevasAlertas.push({
+                user_id: userId,
+                name: nombreAlerta,
+                severity: gravedad,
+                observation: "Reportada automáticamente desde el generador de dietas de la App."
+              });
+            }
+          });
+
+          // Insertamos solo las que sean nuevas
+          if (nuevasAlertas.length > 0) {
+             const { error: alertError } = await supabase
+               .from('medical_alerts')
+               .insert(nuevasAlertas);
+             if (alertError) console.error("Error guardando alertas médicas de dieta:", alertError);
+          }
+        }
+      }
+
       // 2. Desactivar planes anteriores para que este sea el principal
       await supabase
         .from('diet_plans')
@@ -241,7 +290,6 @@ export default function NutritionForm() {
       if (planError) throw planError;
 
       // 4. Preparar e insertar las comidas diarias en `daily_meals`
-      // Aquí usamos JSON.stringify para que `NutritionPlan` pueda leer los macros perfectamente
       const dailyMealsToInsert = Object.entries(plan).map(([dayName, meals]) => ({
         diet_plan_id: newPlan.id,
         day_name: dayName,

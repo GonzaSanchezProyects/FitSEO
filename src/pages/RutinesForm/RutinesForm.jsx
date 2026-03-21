@@ -357,7 +357,7 @@ export default function RoutinesForm() {
     setRutina(resultado);
 
     // ------------------------------------------------------------------
-    // GUARDADO EN SUPABASE (Con Eliminación Total Previa)
+    // GUARDADO EN SUPABASE
     // ------------------------------------------------------------------
     (async () => {
       setSaving(true);
@@ -373,6 +373,31 @@ export default function RoutinesForm() {
           return;
         }
 
+        // 👉 0. GUARDAR ALERTAS MÉDICAS (NUEVO)
+        if (hasLesion === "si" && lesiones.length > 0) {
+          
+          // Primero borramos las alertas anteriores que pudiera tener para no duplicar data
+          await supabase
+            .from('medical_alerts')
+            .delete()
+            .eq('user_id', userId);
+
+          // Armamos el array de alertas médicas a insertar
+          const alertasToInsert = lesiones.map(zona => ({
+            user_id: userId,
+            name: `Lesión en ${zona.charAt(0).toUpperCase() + zona.slice(1)}`, // Ej: "Lesión en Hombro"
+            severity: "Media", // 'Baja', 'Media', 'Alta' (La guardamos en Media por defecto)
+            observation: "Reportada automáticamente por el usuario al generar su rutina en la app."
+          }));
+
+          // Las insertamos en la tabla
+          const { error: alertError } = await supabase
+            .from('medical_alerts')
+            .insert(alertasToInsert);
+
+          if (alertError) console.error("Error guardando alertas médicas:", alertError);
+        }
+
         // 1. ELIMINAR FISICAMENTE las rutinas anteriores. 
         await supabase
           .from('routines')
@@ -385,7 +410,7 @@ export default function RoutinesForm() {
           .insert({
             user_id: userId,
             name: `Plan Hipertrofia - ${nivelMap[nivel]}`,
-            is_active: false // 👉 AQUÍ ESTÁ EL CAMBIO: Se guarda como pendiente (false)
+            is_active: false // Se guarda como pendiente (false)
           })
           .select()
           .single();
@@ -447,7 +472,6 @@ export default function RoutinesForm() {
           }
         }
 
-        // 👉 AQUÍ ESTÁ EL CAMBIO: Mensaje de éxito actualizado
         setSaveMessage("¡Plan generado! Pendiente de aprobación por tu entrenador.");
 
       } catch (error) {

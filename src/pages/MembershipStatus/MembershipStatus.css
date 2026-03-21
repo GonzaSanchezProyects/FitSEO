@@ -252,3 +252,14 @@
 .payment-pill.paid { background: #D1FAE5; color: #047857; }
 .payment-pill.pending { background: #FEF3C7; color: #B45309; }
 .payment-pill.overdue { background: #FEE2E2; color: #B91C1C; }
+
+
+.status-hero-card.vencida {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(185, 28, 28, 0.05));
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.status-hero-card.vencida .status-badge {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #EF4444;
+}
