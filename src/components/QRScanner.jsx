@@ -24,7 +24,6 @@ const QRScanner = ({ onClose }) => {
     setTimeout(async () => {
       
       // 🔒 AHORA SÍ ESTÁ ACTIVADA LA SEGURIDAD:
-      // Si el texto que lee la cámara NO es exactamente igual a tu código secreto, lo rechaza.
       if (qrValue !== CODIGO_SECRETO_GYM) {
         setScanStatus("error");
         setMessage("Código inválido. Este QR no pertenece al gimnasio.");
@@ -34,15 +33,19 @@ const QRScanner = ({ onClose }) => {
           setScanStatus("scanning"); 
           setMessage("Alineá el QR dentro del marco"); 
         }, 3000);
-        return; // Corta la ejecución aquí para que no siga a la base de datos
+        return; 
       }
 
       // Si el código es correcto, procedemos a registrar la asistencia...
       try {
         const { data: authData } = await supabase.auth.getSession();
         const userId = authData?.session?.user?.id;
+        
+        // 👉 NUEVO: Extraemos el gym_id del usuario logueado
+        const userDataStr = localStorage.getItem("userData");
+        const gymId = userDataStr ? JSON.parse(userDataStr).gym_id : null;
 
-        if (!userId) throw new Error("No estás logueado.");
+        if (!userId || !gymId) throw new Error("No estás logueado o falta el ID del gimnasio.");
 
         // Verificar si YA marcó asistencia HOY
         const today = new Date().toISOString().split("T")[0]; 
@@ -50,6 +53,7 @@ const QRScanner = ({ onClose }) => {
           .from("access_logs")
           .select("id, check_in_time")
           .eq("user_id", userId)
+          .eq("gym_id", gymId) // 👉 NUEVO: Filtro Multi-tenant
           .gte("check_in_time", `${today}T00:00:00Z`);
 
         if (fetchError) throw fetchError;
@@ -66,6 +70,7 @@ const QRScanner = ({ onClose }) => {
           .from("access_logs")
           .insert({
             user_id: userId,
+            gym_id: gymId, // 👉 NUEVO: Inserción Multi-tenant
             check_in_time: new Date().toISOString(),
             access_granted: true,
             message: "Ingreso exitoso por QR"
