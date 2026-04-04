@@ -293,3 +293,48 @@
 }
 
 .back-action { margin-top: 1rem; }
+
+/* =========================================
+   🔥 RESPONSIVE DESKTOP Y TABLETS (Generador Dietas)
+   ========================================= */
+@media (min-width: 768px) {
+  /* Formulario a 2 columnas */
+  .glass-form {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    align-items: end;
+  }
+  .form-group { margin-bottom: 0; }
+  
+  /* La pregunta de intolerancias y las opciones ocupan todo */
+  .form-group:nth-child(6), 
+  .lesiones-container, 
+  .form-group:nth-child(8) /* Estructura del plan */ {
+    grid-column: span 2;
+  }
+  
+  .form-actions {
+    grid-column: span 2;
+    flex-direction: row;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+  
+  .form-actions button { flex: 0 1 auto; min-width: 200px; }
+
+  /* Resultados en grilla */
+  .rutina-dias-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .rutina-dias-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+  .dia-card { padding: 2rem; }
+}

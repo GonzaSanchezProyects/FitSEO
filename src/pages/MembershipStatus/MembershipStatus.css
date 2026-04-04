@@ -263,3 +263,42 @@
   background-color: rgba(239, 68, 68, 0.15);
   color: #EF4444;
 }
+
+/* =========================================
+   🔥 RESPONSIVE DESKTOP Y TABLETS (Pagos)
+   ========================================= */
+@media (min-width: 768px) {
+  /* Cambiamos el display para que las tarjetas se pongan lado a lado */
+  .membership-wrapper {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 2rem;
+  }
+  .dashboard-header { width: 100%; }
+  
+  .status-hero-card {
+    flex: 1;
+    min-width: 350px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .history-card {
+    flex: 1.2;
+    min-width: 400px;
+    max-height: 500px;
+    overflow-y: auto; /* Le da scroll propio al historial si es muy largo */
+  }
+  
+  /* Estilo scrollbar para el historial en PC */
+  .history-card::-webkit-scrollbar { width: 8px; }
+  .history-card::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 10px; }
+}
+
+@media (min-width: 1024px) {
+  .monto-gigante { font-size: 5.5rem; margin: 1.5rem 0; }
+  .status-hero-card { padding: 3rem; }
+  .payment-row { padding: 1.2rem; }
+}

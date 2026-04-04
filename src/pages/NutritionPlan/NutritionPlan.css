@@ -366,3 +366,47 @@
   transform: translateY(0);
   box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
 }
+
+/* =========================================
+   🔥 RESPONSIVE DESKTOP Y TABLETS (Nutrición)
+   ========================================= */
+@media (min-width: 768px) {
+  .macros-grid { justify-content: space-evenly; gap: 2rem; }
+  .meals-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .charts-card {
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-header-split {
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 0;
+    gap: 1rem;
+    width: 30%;
+  }
+  .macros-grid {
+    flex: 1;
+    justify-content: flex-end;
+    gap: 3.5rem;
+  }
+  .meal-card {
+    padding: 2.2rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .meal-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(31, 38, 135, 0.08), inset 1px 1px 2px rgba(255,255,255,0.6);
+  }
+  .food-name { font-size: 1.05rem; }
+  .macro-badge { font-size: 0.8rem; padding: 6px 10px; }
+}

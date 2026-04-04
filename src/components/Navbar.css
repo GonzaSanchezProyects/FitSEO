@@ -190,3 +190,216 @@
   .nav-item { width: 55px; font-size: 0.65rem; }
   .qr-link { width: 55px; height: 55px; }
 }
+
+/* --- BARRA DE NAVEGACIÓN PRINCIPAL (Glassmorphism) --- */
+.app-nav {
+  position: fixed;
+  width: 100%;
+  height: 75px; 
+  bottom: 0;
+  left: 0;
+  z-index: 1000;
+  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px;
+  box-sizing: border-box;
+
+  /* Efecto Cristal */
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border-top: 1px solid rgba(255, 255, 255, 0.6);
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255,255,255,0.6);
+}
+
+/* 🔹 GRUPOS IZQ / DER */
+.nav-group {
+  display: flex;
+  gap: 10px;
+  flex: 1;
+}
+
+/* Dejamos el hueco perfecto en el medio para el botón QR (En móvil) */
+.nav-group.left { justify-content: flex-start; padding-right: 30px; }
+.nav-group.right { justify-content: flex-end; padding-left: 30px; }
+
+/* 🔹 ITEMS DE NAVEGACIÓN */
+.nav-item {
+  color: #64748B; 
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  width: 65px;
+  padding: 8px 0;
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.nav-icon {
+  font-size: 1.3rem;
+  margin-bottom: 4px;
+  transition: transform 0.3s ease;
+}
+
+/* Hover/Touch sutil */
+.nav-item:hover {
+  color: #334155;
+}
+
+/* 🔹 ESTADO ACTIVO (Glass Pill) */
+.nav-item.active {
+  color: #2563EB; 
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: inset 1px 1px 2px rgba(255, 255, 255, 0.8), 0 4px 10px rgba(0,0,0,0.03);
+  transform: translateY(-2px);
+}
+
+.nav-item.active .nav-icon {
+  transform: scale(1.15);
+  filter: drop-shadow(0 2px 4px rgba(37, 99, 235, 0.3));
+}
+
+
+/* 🔵 BOTÓN QR CENTRAL (Flotante Premium) */
+.qr-button-wrapper {
+  position: absolute;
+  left: 50%;
+  top: -25px; 
+  transform: translateX(-50%);
+  z-index: 1001;
+}
+
+.qr-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  text-decoration: none;
+  color: white;
+  
+  background: linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%);
+  border: 4px solid rgba(255, 255, 255, 0.5); 
+  background-clip: padding-box;
+  
+  box-shadow: 0 8px 25px rgba(37, 99, 235, 0.4), inset 1px 1px 2px rgba(255,255,255,0.4);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.qr-link svg {
+  font-size: 1.8rem;
+}
+
+.qr-link:hover, .qr-link.active {
+  transform: scale(1.08);
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.5), inset 1px 1px 2px rgba(255,255,255,0.4);
+  background: linear-gradient(135deg, #2563EB 0%, #1e3a8a 100%);
+}
+
+
+/* 🟢 BURBUJA DE INICIO (Flotante derecha) */
+.home-bubble {
+  position: fixed;
+  right: 20px;
+  bottom: 95px; 
+  z-index: 999;
+}
+
+.bubble-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  text-decoration: none;
+  color: #2563EB;
+  
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08), inset 1px 1px 2px rgba(255,255,255,0.6);
+  
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bubble-link svg {
+  font-size: 1.6rem;
+}
+
+.bubble-link:hover, .bubble-link.active {
+  transform: translateY(-4px) scale(1.05);
+  background: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 12px 25px rgba(0,0,0,0.1), inset 1px 1px 2px rgba(255,255,255,0.9);
+}
+
+/* ✅ AJUSTE PARA TELÉFONOS MUY CHICOS (ej: iPhone SE) */
+@media(max-width: 380px) {
+  .nav-group { gap: 2px; }
+  .nav-group.left { padding-right: 25px; }
+  .nav-group.right { padding-left: 25px; }
+  .nav-item { width: 55px; font-size: 0.65rem; }
+  .qr-link { width: 55px; height: 55px; }
+}
+
+
+/* =========================================
+   🔥 RESPONSIVE DESKTOP Y TABLETS
+   ========================================= */
+@media (min-width: 768px) {
+  /* La barra sube para convertirse en Header */
+  .app-nav {
+    top: 0;
+    bottom: auto;
+    padding: 0;
+    height: 80px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.05), inset 0 -1px 0 rgba(255,255,255,0.6);
+    border-top: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.6);
+    
+    /* Centramos todo el contenido interno */
+    justify-content: center;
+    gap: 1.5rem;
+  }
+
+  /* 👉 ACÁ DESAPARECE EL QR EN PC */
+  .qr-button-wrapper {
+    display: none !important; 
+  }
+
+  /* Como no hay QR, quitamos los huecos laterales y dejamos fluir los items */
+  .nav-group {
+    flex: 0 1 auto;
+    gap: 1.5rem;
+  }
+  .nav-group.left { padding-right: 0; }
+  .nav-group.right { padding-left: 0; }
+
+  /* Rediseñamos los items para que queden horizontales (Icono + Texto) */
+  .nav-item {
+    flex-direction: row; 
+    gap: 10px;
+    width: auto; 
+    padding: 10px 20px;
+    font-size: 0.9rem; 
+  }
+
+  .nav-icon {
+    margin-bottom: 0;
+    font-size: 1.2rem;
+  }
+
+  /* La burbuja de inicio se mueve abajo a la derecha para no molestar arriba */
+  .home-bubble {
+    bottom: 30px; 
+    top: auto; 
+  }
+}

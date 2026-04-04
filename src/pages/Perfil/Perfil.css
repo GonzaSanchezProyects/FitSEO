@@ -257,3 +257,49 @@
     align-items: flex-start;
   }
 }
+
+/* =========================================
+   🔥 RESPONSIVE DESKTOP Y TABLETS (Perfil)
+   ========================================= */
+@media (min-width: 768px) {
+  .profile-wrapper .bento-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem;
+  }
+  .user-card {
+    grid-column: span 2;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 2.5rem;
+    text-align: left;
+  }
+  .user-card .avatar-container {
+    margin: 0; /* Quita el centrado automático en móvil */
+    width: 100px;
+    height: 100px;
+  }
+  .user-info { flex: 1; }
+  .profile-stats-grid {
+    grid-column: span 2;
+    display: flex;
+    flex-direction: row;
+    gap: 1.5rem;
+  }
+  .actions-card { grid-column: span 2; }
+  .action-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+  .logout-container {
+    max-width: 300px;
+    margin-left: auto; /* Tira el botón de cerrar sesión a la derecha */
+  }
+}
+
+@media (min-width: 1024px) {
+  .user-card { padding: 3rem; }
+  .action-list .glass-action-btn { padding: 1.5rem; }
+}

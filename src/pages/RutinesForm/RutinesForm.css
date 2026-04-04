@@ -321,3 +321,38 @@
 }
 
 .back-action { margin-top: 1rem; }
+
+/* =========================================
+   🔥 RESPONSIVE DESKTOP Y TABLETS (Generador Rutinas)
+   ========================================= */
+@media (min-width: 768px) {
+  /* El formulario se vuelve de 2 columnas */
+  .glass-form {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    align-items: end;
+  }
+  .form-group { margin-bottom: 0; }
+  .lesiones-container, .error-badge, .generate-btn {
+    grid-column: span 2; /* Estos ocupan todo el ancho */
+  }
+  
+  /* Los resultados se ponen en grilla */
+  .rutina-dias-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .rutina-dias-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+  .generate-btn {
+    max-width: 400px;
+    margin: 1rem auto 0 auto; /* Centra el botón principal */
+  }
+}
