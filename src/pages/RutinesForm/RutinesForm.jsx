@@ -425,7 +425,8 @@ export default function RoutinesForm() {
               block_id: blockData.id,
               name: ex.modified ? `${ex.name} (Adaptado)` : ex.name,
               sets: String(ex.sets), 
-              reps: `${ex.reps} | Desc: ${ex.rest}`, 
+              reps: String(ex.reps),       // 👉 Limpio, solo "8-12"
+              rest_time: String(ex.rest),  // 👉 Guardado en su propia columna
               video_url: null 
             }));
 
