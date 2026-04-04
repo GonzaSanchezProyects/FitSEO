@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import "./NutritionForm.css";
 import { useNavigate } from "react-router-dom";
-// 👉 Importamos tu cliente de Supabase
 import { supabase } from "../../supabaseClient"; 
 import { FiInfo, FiCheckCircle } from "react-icons/fi";
 
@@ -178,7 +177,6 @@ export default function NutritionForm() {
   const [generatedPlan, setGeneratedPlan] = useState(null);
   const [warnings, setWarnings] = useState([]);
   
-  // Estados de guardado Supabase
   const [saving, setSaving] = useState(false);
   const [saveFeedback, setSaveFeedback] = useState(null);
 
@@ -211,37 +209,37 @@ export default function NutritionForm() {
     setWarnings(warnings);
 
     try {
-      // 1. Obtener ID del usuario logueado
       const { data: authData } = await supabase.auth.getSession();
       const userId = authData?.session?.user?.id;
 
-      if (!userId) {
+      const userDataStr = localStorage.getItem("userData");
+      const gymId = userDataStr ? JSON.parse(userDataStr).gym_id : null;
+
+      if (!userId || !gymId) {
         setSaveFeedback({ type: 'error', text: "Error: Tu sesión expiró o no estás logueado." });
         setSaving(false);
         return;
       }
 
-      // 👉 1.5 GUARDADO DE ALERTAS MÉDICAS (Solo enfermedades, no dietas electivas)
+      // 👉 1.5 GUARDADO DE ALERTAS MÉDICAS (MULTI-TENANT)
       if (hasConditions === "si" && conds.length > 0) {
         
-        // Filtramos para ignorar vegano/vegetariano y quedarnos solo con lo médico
         const condicionesMedicas = conds.filter(c => 
           c === 'lactosa' || c === 'celiaca' || c === 'diabetes' || c === 'hipertension'
         );
 
         if (condicionesMedicas.length > 0) {
-          // Buscamos si ya tiene estas alertas guardadas para no duplicar (por nombre parcial)
           const { data: existingAlerts } = await supabase
             .from('medical_alerts')
             .select('name')
-            .eq('user_id', userId);
+            .eq('user_id', userId)
+            .eq('gym_id', gymId); // 👉 MULTI-TENANT
             
           const alertasExistentesStr = (existingAlerts || []).map(a => a.name.toLowerCase());
 
           const nuevasAlertas = [];
 
           condicionesMedicas.forEach(cond => {
-            // Mapeamos el ID a un nombre más legible
             let nombreAlerta = "";
             let gravedad = "Media";
             if (cond === "lactosa") nombreAlerta = "Intolerancia a la Lactosa";
@@ -249,10 +247,10 @@ export default function NutritionForm() {
             if (cond === "diabetes") { nombreAlerta = "Diabetes"; gravedad = "Alta"; }
             if (cond === "hipertension") { nombreAlerta = "Hipertensión"; gravedad = "Alta"; }
 
-            // Si no existe, la preparamos para insertar
             if (!alertasExistentesStr.includes(nombreAlerta.toLowerCase())) {
               nuevasAlertas.push({
                 user_id: userId,
+                gym_id: gymId, // 👉 MULTI-TENANT
                 name: nombreAlerta,
                 severity: gravedad,
                 observation: "Reportada automáticamente desde el generador de dietas de la App."
@@ -260,36 +258,35 @@ export default function NutritionForm() {
             }
           });
 
-          // Insertamos solo las que sean nuevas
           if (nuevasAlertas.length > 0) {
-             const { error: alertError } = await supabase
-               .from('medical_alerts')
-               .insert(nuevasAlertas);
+             const { error: alertError } = await supabase.from('medical_alerts').insert(nuevasAlertas);
              if (alertError) console.error("Error guardando alertas médicas de dieta:", alertError);
           }
         }
       }
 
-      // 2. Desactivar planes anteriores para que este sea el principal
+      // 2. Desactivar planes anteriores (MULTI-TENANT)
       await supabase
         .from('diet_plans')
         .update({ is_active: false })
-        .eq('user_id', userId);
+        .eq('user_id', userId)
+        .eq('gym_id', gymId); // 👉 MULTI-TENANT
 
-      // 3. Crear nuevo plan en `diet_plans`
+      // 3. Crear nuevo plan en `diet_plans` (MULTI-TENANT)
       const { data: newPlan, error: planError } = await supabase
         .from('diet_plans')
         .insert({
           user_id: userId,
+          gym_id: gymId, // 👉 MULTI-TENANT
           is_active: true,
-          start_date: new Date().toISOString().split('T')[0] // Fecha YYYY-MM-DD
+          start_date: new Date().toISOString().split('T')[0] 
         })
         .select()
         .single();
 
       if (planError) throw planError;
 
-      // 4. Preparar e insertar las comidas diarias en `daily_meals`
+      // 4. Preparar e insertar las comidas diarias
       const dailyMealsToInsert = Object.entries(plan).map(([dayName, meals]) => ({
         diet_plan_id: newPlan.id,
         day_name: dayName,
@@ -299,10 +296,7 @@ export default function NutritionForm() {
         dinner: JSON.stringify(meals.cena)
       }));
 
-      const { error: mealsError } = await supabase
-        .from('daily_meals')
-        .insert(dailyMealsToInsert);
-
+      const { error: mealsError } = await supabase.from('daily_meals').insert(dailyMealsToInsert);
       if (mealsError) throw mealsError;
 
       setSaveFeedback({ type: 'success', text: "¡Dieta generada y guardada exitosamente!" });

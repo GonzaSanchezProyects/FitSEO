@@ -3,18 +3,12 @@ import "./Perfil.css";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../supabaseClient"; 
 import { 
-  FiTrendingUp, 
-  FiCreditCard, 
-  FiActivity, 
-  FiPieChart, 
-  FiChevronRight,
-  FiLogOut,
-  FiMessageCircle
+  FiTrendingUp, FiCreditCard, FiActivity, 
+  FiPieChart, FiChevronRight, FiLogOut, FiMessageCircle
 } from "react-icons/fi";
 
 const Perfil = () => {
   const navigate = useNavigate();
-  
   const [userData, setUserData] = useState({ firstName: "Usuario", lastName: "", email: "" });
   const [currentWeight, setCurrentWeight] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -25,8 +19,11 @@ const Perfil = () => {
         const { data: authData } = await supabase.auth.getSession();
         const userId = authData?.session?.user?.id;
         const userEmail = authData?.session?.user?.email;
+        
+        const userDataStr = localStorage.getItem("userData");
+        const gymId = userDataStr ? JSON.parse(userDataStr).gym_id : null;
 
-        if (!userId) {
+        if (!userId || !gymId) {
           navigate("/login");
           return;
         }
@@ -35,6 +32,7 @@ const Perfil = () => {
           .from('users')
           .select('first_name, last_name, weight_kg')
           .eq('id', userId)
+          .eq('gym_id', gymId) // 👉 AGREGADO: Filtro Multi-tenant
           .single();
 
         if (userRecord) {
@@ -50,6 +48,7 @@ const Perfil = () => {
           .from('weight_logs')
           .select('weight')
           .eq('user_id', userId)
+          .eq('gym_id', gymId) // 👉 AGREGADO: Filtro Multi-tenant
           .order('created_at', { ascending: false })
           .limit(1);
 
@@ -103,8 +102,6 @@ const Perfil = () => {
 
   return (
     <div className="dashboard-container profile-wrapper">
-      
-      {/* --- HEADER --- */}
       <header className="dashboard-header fade-in">
         <div>
           <p className="greeting">Ajustes de cuenta</p>
@@ -113,12 +110,9 @@ const Perfil = () => {
       </header>
 
       <div className="bento-grid">
-        {/* --- TARJETA DE USUARIO --- */}
         <section className="bento-card user-card slide-up" style={{ animationDelay: "0.1s" }}>
           <div className="avatar-container">
-            <div className="avatar-initials">
-              {getInitials()}
-            </div>
+            <div className="avatar-initials">{getInitials()}</div>
           </div>
           <div className="user-info">
             <h2 className="profile-name">{userData.firstName} {userData.lastName}</h2>
@@ -127,7 +121,6 @@ const Perfil = () => {
           </div>
         </section>
 
-        {/* --- TARJETAS DE ESTADÍSTICAS --- */}
         <div className="profile-stats-grid slide-up" style={{ animationDelay: "0.2s" }}>
           <div className="stat-box glass-box-inner">
             <span className="stat-icon"><FiTrendingUp /></span>
@@ -135,7 +128,6 @@ const Perfil = () => {
             <span className="stat-value">{currentWeight} <small>kg</small></span>
             <span className="stat-desc">En Seguimiento</span>
           </div>
-
           <div className="stat-box glass-box-inner clickable" onClick={() => navigate("/cuota")}>
             <span className="stat-icon"><FiCreditCard /></span>
             <span className="stat-label">Suscripción</span>
@@ -144,7 +136,6 @@ const Perfil = () => {
           </div>
         </div>
 
-        {/* --- TARJETAS DE ACCIONES --- */}
         <section className="bento-card actions-card slide-up" style={{ animationDelay: "0.3s" }}>
           <h3 className="section-subtitle">Configuración y Ayuda</h3>
           <div className="action-list">
@@ -153,14 +144,11 @@ const Perfil = () => {
               <span className="btn-text">Generar nueva rutina</span>
               <FiChevronRight className="arrow-icon" />
             </button>
-            
             <button className="glass-action-btn" onClick={() => navigate("/nutritionForm")}>
               <div className="btn-icon-wrapper icon-orange"><FiPieChart /></div>
               <span className="btn-text">Generar nueva dieta</span>
               <FiChevronRight className="arrow-icon" />
             </button>
-
-            {/* Agregamos el botón de WhatsApp que tenías preparado */}
             <button className="glass-action-btn" onClick={handleSupportClick}>
               <div className="btn-icon-wrapper icon-green"><FiMessageCircle /></div>
               <span className="btn-text">Soporte por WhatsApp</span>
@@ -170,14 +158,12 @@ const Perfil = () => {
         </section>
       </div>
 
-      {/* --- BOTÓN DE CERRAR SESIÓN --- */}
       <div className="logout-container slide-up" style={{ animationDelay: "0.4s" }}>
         <button className="danger-glass-btn" onClick={handleLogout}>
           <FiLogOut className="logout-icon" />
           Cerrar sesión
         </button>
       </div>
-
     </div>
   );
 };

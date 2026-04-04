@@ -4,21 +4,10 @@ import * as am5 from "@amcharts/amcharts5";
 import * as am5percent from "@amcharts/amcharts5/percent";
 import am5themes_Animated from "@amcharts/amcharts5/themes/Animated";
 import { useNavigate } from "react-router-dom";
-
-// 👉 Íconos minimalistas + Nuevos iconos para las pantallas de estado
 import { 
-  FiChevronLeft, 
-  FiChevronRight, 
-  FiCoffee, 
-  FiSun, 
-  FiMoon, 
-  FiInfo, 
-  FiClock,
-  FiRefreshCw, // Icono giratorio de carga
-  FiAlertCircle, // Icono de error
-  FiClipboard  // Icono de plan vacío
+  FiChevronLeft, FiChevronRight, FiCoffee, FiSun, FiMoon, 
+  FiInfo, FiClock, FiRefreshCw, FiAlertCircle, FiClipboard  
 } from "react-icons/fi";
-
 import { supabase } from "../../supabaseClient"; 
 
 const NutritionPlan = () => {
@@ -27,7 +16,6 @@ const NutritionPlan = () => {
   const [stats, setStats] = useState({ kcal: 0, p: 0, c: 0, f: 0, pPct: 0, cPct: 0, fPct: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
   const [dayKeys, setDayKeys] = useState([]);
   const [viewIndex, setViewIndex] = useState(0);
 
@@ -35,7 +23,6 @@ const NutritionPlan = () => {
   const carbsRoot = useRef(null);
   const fatRoot = useRef(null);
 
-  // 1. Cargar datos directamente desde SUPABASE
   const fetchDiet = async () => {
     setLoading(true);
     setError("");
@@ -43,8 +30,11 @@ const NutritionPlan = () => {
     try {
       const { data: authData } = await supabase.auth.getSession();
       const userId = authData?.session?.user?.id;
+      
+      const userDataStr = localStorage.getItem("userData");
+      const gymId = userDataStr ? JSON.parse(userDataStr).gym_id : null;
 
-      if (!userId) {
+      if (!userId || !gymId) {
         navigate("/login");
         return;
       }
@@ -54,15 +44,10 @@ const NutritionPlan = () => {
         .select(`
           id,
           start_date,
-          daily_meals (
-            day_name,
-            breakfast,
-            lunch,
-            snack,
-            dinner
-          )
+          daily_meals (day_name, breakfast, lunch, snack, dinner)
         `)
         .eq('user_id', userId)
+        .eq('gym_id', gymId) // 👉 AGREGADO: Filtro Multi-tenant
         .eq('is_active', true)
         .single(); 
 
@@ -129,11 +114,8 @@ const NutritionPlan = () => {
     }
   };
 
-  useEffect(() => {
-    fetchDiet();
-  }, [navigate]);
+  useEffect(() => { fetchDiet(); }, [navigate]);
 
-  // 2. Render Charts de AmCharts
   useLayoutEffect(() => {
     if (loading || !stats.kcal) return;
     
@@ -159,10 +141,7 @@ const NutritionPlan = () => {
       series.data.setAll(data);
       
       series.slices.template.setAll({ 
-        stroke: am5.color(0xffffff), 
-        strokeWidth: 2, 
-        strokeOpacity: 0.2,
-        templateField: "fill" 
+        stroke: am5.color(0xffffff), strokeWidth: 2, strokeOpacity: 0.2, templateField: "fill" 
       });
       
       series.slices.each((slice, index) => {
@@ -196,7 +175,6 @@ const NutritionPlan = () => {
     }
   };
 
-  // --- ESTADOS DE CARGA Y ERROR (Estilo Premium) ---
   if (loading) return (
     <div className="dashboard-container nutrition-wrapper">
       <div className="status-state-card fade-in">
@@ -222,7 +200,6 @@ const NutritionPlan = () => {
     </div>
   );
 
-  // --- ESTADO VACÍO (Sin Dieta) ---
   if (!planData || Object.keys(planData).length === 0) return (
     <div className="dashboard-container nutrition-wrapper">
       <header className="dashboard-header fade-in">
@@ -250,8 +227,6 @@ const NutritionPlan = () => {
 
   return (
     <div className="dashboard-container nutrition-wrapper">
-      
-      {/* Header */}
       <header className="dashboard-header fade-in">
         <div>
           <p className="greeting">Tu alimentación</p>
@@ -259,7 +234,6 @@ const NutritionPlan = () => {
         </div>
       </header>
 
-      {/* Navegador de Días (Estilo Píldora) */}
       <div className="diet-day-nav slide-up" style={{ animationDelay: "0.1s" }}>
         <button onClick={handlePrev} className="nav-arrow-btn"><FiChevronLeft /></button>
         <div className="day-display">
@@ -269,7 +243,6 @@ const NutritionPlan = () => {
         <button onClick={handleNext} className="nav-arrow-btn"><FiChevronRight /></button>
       </div>
 
-      {/* Gráficos de Macros (Bento Card) */}
       <section className="bento-card charts-card slide-up" style={{ animationDelay: "0.2s" }}>
         <div className="card-header-split">
           <h3 className="card-title">Promedio Diario</h3>
@@ -312,7 +285,6 @@ const NutritionPlan = () => {
         </div>
       </section>
 
-      {/* Lista de Comidas */}
       <div className="meals-container">
         {["desayuno", "almuerzo", "colaciones", "cena"].map((mealKey, idx) => (
              <div key={mealKey} className="bento-card meal-card slide-up" style={{ animationDelay: `${0.3 + (idx * 0.1)}s` }}>

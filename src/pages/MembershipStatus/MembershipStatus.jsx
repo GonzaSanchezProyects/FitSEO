@@ -8,7 +8,6 @@ const MembershipStatus = () => {
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
 
-  // Estados para la data real
   const [isUserActive, setIsUserActive] = useState(false);
   const [ultimoPago, setUltimoPago] = useState(0);
   const [fechaUltimoPago, setFechaUltimoPago] = useState("--/--/----");
@@ -20,29 +19,33 @@ const MembershipStatus = () => {
     const fetchMembershipData = async () => {
       try {
         const { data: authData, error: authError } = await supabase.auth.getSession();
+        const userDataStr = localStorage.getItem("userData");
+        const gymId = userDataStr ? JSON.parse(userDataStr).gym_id : null;
         
-        if (authError || !authData?.session) {
+        if (authError || !authData?.session || !gymId) {
           navigate("/login");
           return;
         }
 
         const userId = authData.session.user.id;
 
-        // 1. Verificamos si está habilitado (enabled)
+        // 1. Verificamos si está habilitado
         const { data: userData } = await supabase
           .from('users')
           .select('enabled')
           .eq('id', userId)
+          .eq('gym_id', gymId) // 👉 AGREGADO: Filtro Multi-tenant
           .single();
 
         const activo = userData?.enabled === true || String(userData?.enabled).toLowerCase() === "true";
         setIsUserActive(activo);
 
-        // 2. Buscamos la suscripción actual para ver el vencimiento
+        // 2. Buscamos la suscripción actual 
         const { data: subData } = await supabase
           .from('subscriptions')
           .select('start_date, due_date')
           .eq('user_id', userId)
+          .eq('gym_id', gymId) // 👉 AGREGADO: Filtro Multi-tenant
           .order('created_at', { ascending: false })
           .limit(1)
           .single();
@@ -54,25 +57,24 @@ const MembershipStatus = () => {
           
           setFechaVencimiento(vencimiento.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }));
 
-          // Calculamos el porcentaje de días consumidos
           const duracionTotal = vencimiento.getTime() - inicio.getTime();
           const consumido = hoy.getTime() - inicio.getTime();
           let porcentaje = duracionTotal > 0 ? (consumido / duracionTotal) * 100 : 0;
           
-          // Limitamos el porcentaje entre 0 y 100
           if (porcentaje < 0) porcentaje = 0;
           if (porcentaje > 100) porcentaje = 100;
           
           setPorcentajeConsumido(Math.round(porcentaje));
         }
 
-        // 3. Buscamos el historial de pagos de la tabla 'payments'
+        // 3. Buscamos el historial de pagos 
         const { data: pagosData } = await supabase
           .from('payments')
           .select('amount, payment_date, status')
           .eq('user_id', userId)
+          .eq('gym_id', gymId) // 👉 AGREGADO: Filtro Multi-tenant
           .order('payment_date', { ascending: false })
-          .limit(10); // Traemos los últimos 10 pagos
+          .limit(10);
 
         if (pagosData && pagosData.length > 0) {
           setHistorialPagos(pagosData);
@@ -92,7 +94,6 @@ const MembershipStatus = () => {
     fetchMembershipData();
   }, [navigate]);
 
-  // Pantalla de carga mientras se busca la info en la base de datos
   if (isLoading) {
     return (
       <div className="dashboard-container membership-wrapper">
@@ -103,15 +104,12 @@ const MembershipStatus = () => {
     );
   }
 
-  // Clases dinámicas basadas en el estado Activo/Inactivo
   const estadoClaseCSS = isUserActive ? "pagada" : "vencida";
   const textoEstado = isUserActive ? "Activo" : "Inactivo";
   const iconoEstado = isUserActive ? <FiCheckCircle /> : <FiAlertCircle />;
 
   return (
     <div className="dashboard-container membership-wrapper">
-      
-      {/* Header */}
       <header className="dashboard-header fade-in">
         <div>
           <p className="greeting">Mi Suscripción</p>
@@ -119,19 +117,14 @@ const MembershipStatus = () => {
         </div>
       </header>
 
-      {/* --- TARJETA PRINCIPAL DE ESTADO --- */}
       <section className={`bento-card status-hero-card ${estadoClaseCSS} slide-up`} style={{ animationDelay: "0.1s" }}>
-        
         <div className="status-badge">
           <span className="status-icon">{iconoEstado}</span>
           <span className="estado-text">{textoEstado}</span>
         </div>
-
         <div className="monto-gigante">
-          <span className="currency">$</span>
-          {ultimoPago}
+          <span className="currency">$</span>{ultimoPago}
         </div>
-
         <div className="fechas-info">
           <div className="fecha-box">
             <span className="fecha-label">Último pago</span>
@@ -142,28 +135,20 @@ const MembershipStatus = () => {
             <span className="fecha-valor"><FiCalendar className="tiny-icon"/> {fechaVencimiento}</span>
           </div>
         </div>
-
-        {/* Barra de progreso de ciclo (Solo la mostramos si está activo y tiene % calculado) */}
         {isUserActive && (
           <div className="progress-wrapper">
             <div className="progress-labels">
-              <span>Días consumidos</span>
-              <span>{porcentajeConsumido}%</span>
+              <span>Días consumidos</span><span>{porcentajeConsumido}%</span>
             </div>
             <div className="glass-progress-bar">
-              <div 
-                className="glass-progress-fill" 
-                style={{ width: `${porcentajeConsumido}%` }}
-              ></div>
+              <div className="glass-progress-fill" style={{ width: `${porcentajeConsumido}%` }}></div>
             </div>
           </div>
         )}
       </section>
 
-      {/* --- HISTORIAL DE PAGOS --- */}
       <section className="bento-card history-card slide-up" style={{ animationDelay: "0.2s" }}>
         <h3 className="section-subtitle">Pagos Anteriores</h3>
-        
         <div className="payment-list">
           {historialPagos.length > 0 ? (
             historialPagos.map((pago, index) => {
@@ -172,9 +157,7 @@ const MembershipStatus = () => {
               
               return (
                 <div key={index} className="payment-row">
-                  <div className="payment-icon-wrapper">
-                    <FiDollarSign />
-                  </div>
+                  <div className="payment-icon-wrapper"><FiDollarSign /></div>
                   <div className="payment-details">
                     <span className="payment-title">Pago Mensualidad</span>
                     <span className="payment-date">{fechaFormateada}</span>
@@ -195,7 +178,6 @@ const MembershipStatus = () => {
           )}
         </div>
       </section>
-
     </div>
   );
 };

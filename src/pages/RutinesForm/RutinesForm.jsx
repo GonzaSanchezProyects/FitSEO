@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./RutinesForm.css";
 import { useNavigate } from "react-router-dom";
-// 👉 Importamos tu cliente de Supabase
 import { supabase } from "../../supabaseClient"; 
 
 export default function RoutinesForm() {
@@ -19,123 +18,226 @@ export default function RoutinesForm() {
   const [warnings, setWarnings] = useState([]);
   const [error, setError] = useState("");
 
-  // ---------------------------
-  // Estados de guardado
-  // ---------------------------
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState("");
 
   const nivelMap = { principiante: "PRINCIPIANTE", intermedio: "INTERMEDIO", avanzado: "AVANZADO" };
 
   // ---------------------------
-  // Pools, utilidades y lógica (Generación) - INTACTO
+  // 1. POOLS DE EJERCICIOS (Patrones Anti-Duplicados)
   // ---------------------------
   const pools = {
-    pecho_sup: [
-      { name: "Press inclinado con mancuernas", joints: ["pecho","hombro"], riskyTags: [], equipment: "manc" },
-      { name: "Aperturas inclinadas con mancuernas", joints: ["pecho","hombro"], riskyTags: [], equipment: "manc" },
-      { name: "Press inclinado en máquina", joints: ["pecho","hombro"], riskyTags: ["machine_safe"], equipment: "maquina" },
+    pecho_plano: [
+      { name: "Press plano con mancuernas", riskyTags: ["heavy_chest_free"], pattern: "press_horiz" },
+      { name: "Press en máquina sentado", riskyTags: ["machine_safe"], pattern: "press_horiz" },
+      { name: "Press plano con barra", riskyTags: ["heavy_chest_free", "barbell"], pattern: "press_horiz" },
+      { name: "Peck Deck (Aperturas en máquina)", riskyTags: ["machine_safe"], pattern: "fly_horiz" },
+      { name: "Cruces de polea altura media", riskyTags: ["cable_safe"], pattern: "fly_horiz" },
     ],
-    pecho_mid: [
-      { name: "Press plano con mancuernas", joints: ["pecho","hombro"], riskyTags: [], equipment: "manc" },
-      { name: "Press en máquina sentado", joints: ["pecho","hombro"], riskyTags: ["machine_safe"], equipment: "maquina" },
-      { name: "Press plano con barra", joints: ["pecho","hombro"], riskyTags: ["barbell","axial_load"], equipment: "barra" },
+    pecho_inclinado: [
+      { name: "Press inclinado con mancuernas", riskyTags: ["heavy_chest_free"], pattern: "press_inc" },
+      { name: "Press inclinado en máquina", riskyTags: ["machine_safe"], pattern: "press_inc" },
+      { name: "Press inclinado con barra", riskyTags: ["heavy_chest_free", "barbell"], pattern: "press_inc" },
+      { name: "Aperturas inclinadas con mancuernas", riskyTags: ["shoulder_stretch"], pattern: "fly_inc" },
+      { name: "Cruces en polea baja (hacia arriba)", riskyTags: ["cable_safe"], pattern: "fly_inc" },
     ],
-    pecho_inf: [
-      { name: "Press declinado en máquina", joints: ["pecho","hombro"], riskyTags: ["machine_safe"], equipment: "maquina" },
-      { name: "Fondos asistidos", joints: ["pecho","hombro","codo"], riskyTags: ["bodyweight"], equipment: "bodyweight" },
+    pecho_declinado: [
+      { name: "Fondos en paralelas", riskyTags: ["dip", "heavy_shoulder"], pattern: "dip" },
+      { name: "Press declinado en máquina", riskyTags: ["machine_safe"], pattern: "press_dec" },
+      { name: "Cruces en polea alta (hacia abajo)", riskyTags: ["cable_safe"], pattern: "fly_dec" },
     ],
-    espalda_altas: [
-      { name: "Jalón en polea", joints: ["espalda","hombro"], riskyTags: ["machine_safe"], equipment: "maquina" },
-      { name: "Remo sentado en máquina", joints: ["espalda","codo"], riskyTags: ["machine_safe"], equipment: "maquina" },
-      { name: "Remo con mancuerna", joints: ["espalda","codo"], riskyTags: [], equipment: "manc" },
+    espalda_vertical: [
+      { name: "Jalón al pecho agarre prono", riskyTags: ["machine_safe"], pattern: "pull_vert_wide" },
+      { name: "Jalón al pecho agarre neutro/supino", riskyTags: ["machine_safe"], pattern: "pull_vert_close" },
+      { name: "Dominadas (Libres o Asistidas)", riskyTags: ["bodyweight"], pattern: "pull_vert_wide" },
+      { name: "Pull-over en polea alta", riskyTags: ["cable_safe", "shoulder_stretch"], pattern: "pullover" },
     ],
-    espalda_baja: [
-      { name: "Remo con mancuerna apoyado", joints: ["espalda","codo"], riskyTags: [], equipment: "manc" },
-      { name: "Extensiones suaves", joints: ["espalda"], riskyTags: ["extension","lumbar_load"], equipment: "bench" },
-      { name: "Peso muerto rumano", joints: ["espalda","cadera"], riskyTags: ["lumbar_load","hip_hinge"], equipment: "barra" },
+    espalda_horizontal: [
+      { name: "Remo sentado en polea", riskyTags: ["machine_safe"], pattern: "row_horiz_bi" },
+      { name: "Remo con mancuerna a una mano", riskyTags: ["unsupported_row"], pattern: "row_horiz_uni" },
+      { name: "Remo en máquina (Apoyo al pecho)", riskyTags: ["machine_safe", "lumbar_safe"], pattern: "row_horiz_bi" },
+      { name: "Remo con barra", riskyTags: ["unsupported_row", "axial_load", "lumbar_load"], pattern: "row_horiz_bi" },
     ],
     quads: [
-      { name: "Prensa de piernas", joints: ["rodilla","cadera"], riskyTags: ["machine_safe"], equipment: "maquina" },
-      { name: "Sentadilla con asistencia", joints: ["rodilla","cadera"], riskyTags: ["barbell","axial_load"], equipment: "barra" },
-      { name: "Extensión de pierna", joints: ["rodilla"], riskyTags: ["isolation"], equipment: "maquina" },
+      { name: "Sentadilla libre con barra", riskyTags: ["heavy_squat", "axial_load"], pattern: "squat_bi" },
+      { name: "Sentadilla en Copa (Goblet Squat)", riskyTags: ["goblet_squat"], pattern: "squat_bi" },
+      { name: "Prensa de piernas 45°", riskyTags: ["machine_safe", "heavy_knee"], pattern: "press_leg" },
+      { name: "Sentadilla Hack o Multipower", riskyTags: ["machine_safe", "heavy_knee"], pattern: "squat_bi" },
+      { name: "Sentadilla Búlgara", riskyTags: ["lunge", "heavy_knee"], pattern: "squat_uni" },
+      { name: "Extensión de cuádriceps en máquina", riskyTags: ["machine_safe", "isolation"], pattern: "ext_leg" },
     ],
-    femorales_gluteos: [
-      { name: "Puente de glúteos", joints: ["cadera","gluteo"], riskyTags: ["hip_thrust_safe"], equipment: "manc" },
-      { name: "Curl de piernas", joints: ["rodilla"], riskyTags: ["machine_safe"], equipment: "maquina" },
-      { name: "Subidas a banco", joints: ["rodilla","cadera"], riskyTags: [], equipment: "bodyweight" },
-      { name: "Levantamiento isquiotibiales", joints: ["espalda","cadera"], riskyTags: ["lumbar_load","hip_hinge"], equipment: "barra" },
+    isquios: [
+      { name: "Peso muerto rumano con mancuernas", riskyTags: ["free_hinge", "lumbar_load"], pattern: "hinge" },
+      { name: "Peso muerto rumano con barra", riskyTags: ["free_hinge", "axial_load", "lumbar_load"], pattern: "hinge" },
+      { name: "Curl femoral tumbado", riskyTags: ["machine_safe", "isolation"], pattern: "curl_leg" },
+      { name: "Curl femoral sentado", riskyTags: ["machine_safe", "isolation"], pattern: "curl_leg" },
+    ],
+    gluteos: [
+      { name: "Hip Thrust con barra o máquina", riskyTags: ["machine_safe"], pattern: "thrust" },
+      { name: "Puente de glúteos", riskyTags: ["bodyweight"], pattern: "thrust" },
+      { name: "Patada de glúteo en polea", riskyTags: ["cable_safe"], pattern: "kickback" },
+      { name: "Máquina abductora", riskyTags: ["machine_safe"], pattern: "abduction" },
     ],
     gemelos: [
-      { name: "Elevación sentado", joints: ["tobillo"], riskyTags: ["machine_safe"], equipment: "maquina" },
-      { name: "Elevación de pie", joints: ["tobillo"], riskyTags: [], equipment: "bodyweight" },
+      { name: "Elevación de talones de pie (Máquina)", riskyTags: ["heavy_calf_stand", "axial_load"], pattern: "calf_stand" },
+      { name: "Elevación de talones sentado", riskyTags: ["machine_safe"], pattern: "calf_seat" },
+      { name: "Elevación de talones en Prensa", riskyTags: ["machine_safe"], pattern: "calf_press" },
     ],
-    deltoides: [
-      { name: "Press con mancuernas", joints: ["hombro"], riskyTags: [], equipment: "manc" },
-      { name: "Elevaciones laterales", joints: ["hombro"], riskyTags: [], equipment: "manc" },
-      { name: "Face-pull", joints: ["hombro","escapula"], riskyTags: [], equipment: "cable" },
-      { name: "Press tras nuca (evitar)", joints: ["hombro"], riskyTags: ["avoid","overhead_heavy"], equipment: "barra" },
+    hombro_press: [
+      { name: "Press militar con mancuernas", riskyTags: ["overhead_press"], pattern: "press_shoulder" },
+      { name: "Press de hombros en máquina", riskyTags: ["machine_safe", "overhead_press"], pattern: "press_shoulder" },
+    ],
+    hombro_lateral: [
+      { name: "Elevaciones laterales con mancuernas", riskyTags: [], pattern: "lat_raise_free" },
+      { name: "Elevaciones laterales en polea", riskyTags: ["cable_safe"], pattern: "lat_raise_cable" },
+      { name: "Elevaciones frontales (Disco o Mancuernas)", riskyTags: [], pattern: "front_raise" },
+    ],
+    hombro_posterior: [
+      { name: "Face-pull en polea alta", riskyTags: ["cable_safe"], pattern: "rear_delt_cable" },
+      { name: "Pájaros en máquina (Peck Deck Inverso)", riskyTags: ["machine_safe"], pattern: "rear_delt_machine" },
+      { name: "Pájaros con mancuernas (Inclinado)", riskyTags: ["unsupported_row"], pattern: "rear_delt_free" },
     ],
     biceps: [
-      { name: "Curl mancuerna", joints: ["codo"], riskyTags: [], equipment: "manc" },
-      { name: "Curl martillo", joints: ["codo","antebrazo"], riskyTags: [], equipment: "manc" },
-      { name: "Curl en máquina", joints: ["codo"], riskyTags: ["machine_safe"], equipment: "maquina" },
+      { name: "Curl alterno con mancuernas", riskyTags: [], pattern: "curl_bi_free" },
+      { name: "Curl con barra Z", riskyTags: ["barbell"], pattern: "curl_bi_free" },
+      { name: "Curl martillo con mancuernas", riskyTags: [], pattern: "curl_hammer" },
+      { name: "Curl en banco Scott (Máquina)", riskyTags: ["machine_safe"], pattern: "curl_iso" },
+      { name: "Curl en polea baja", riskyTags: ["cable_safe"], pattern: "curl_cable" },
     ],
     triceps: [
-      { name: "Extensión en polea", joints: ["codo"], riskyTags: ["machine_safe"], equipment: "cable" },
-      { name: "Press cerrado", joints: ["codo","hombro"], riskyTags: ["barbell"], equipment: "barra" },
-      { name: "Fondos asistidos", joints: ["codo","hombro"], riskyTags: ["bodyweight"], equipment: "bodyweight" },
+      { name: "Extensión de tríceps en polea alta", riskyTags: ["cable_safe"], pattern: "tri_pushdown" },
+      { name: "Press Francés", riskyTags: ["heavy_triceps_ext", "elbow_stress"], pattern: "tri_skullcrusher" },
+      { name: "Extensiones tras nuca (Polea/Mancuerna)", riskyTags: ["overhead_press", "shoulder_stretch"], pattern: "tri_overhead" },
+      { name: "Press cerrado en banca", riskyTags: ["barbell", "heavy_chest_free"], pattern: "tri_press" },
     ],
     core: [
-      { name: "Plancha rodillas", joints: ["core"], riskyTags: ["isometric"], equipment: "bodyweight" },
-      { name: "Control abdominal", joints: ["core"], riskyTags: ["motor_control"], equipment: "bodyweight" },
-      { name: "Extensión cuatro apoyos", joints: ["core","espalda"], riskyTags: ["motor_control"], equipment: "bodyweight" },
+      { name: "Plancha abdominal (Isométrica)", riskyTags: ["bodyweight", "isometric"], pattern: "core_iso" },
+      { name: "Crunch en polea alta", riskyTags: ["cable_safe"], pattern: "core_flex" },
+      { name: "Elevación de piernas colgado", riskyTags: ["bodyweight"], pattern: "core_lower" },
+      { name: "Press Pallof en polea", riskyTags: ["cable_safe", "lumbar_safe"], pattern: "core_anti_rot" },
     ],
   };
 
-  const safeByGroup = {
-    espalda_baja: [{ name: "Remo en máquina", joints: ["espalda","codo"], riskyTags: ["machine_safe"], equipment: "maquina" }],
-    pecho_sup: [{ name: "Press inclinado máquina", joints: ["pecho","hombro"], riskyTags: ["machine_safe"], equipment: "maquina" }],
-    deltoides: [{ name: "Elevaciones laterales suaves", joints: ["hombro"], riskyTags: [], equipment: "manc" }],
-    quads: [{ name: "Prensa de piernas corto", joints: ["rodilla","cadera"], riskyTags: ["machine_safe"], equipment: "maquina" }],
-    femorales_gluteos: [{ name: "Puente glúteos", joints: ["cadera","gluteo"], riskyTags: ["hip_thrust_safe"], equipment: "manc" }],
+  const avoidTagsByInjury = {
+    rodilla: ["heavy_squat", "lunge", "axial_load", "heavy_knee"],
+    espalda: ["lumbar_load", "free_hinge", "axial_load", "unsupported_row"],
+    hombro: ["overhead_press", "heavy_chest_free", "dip", "shoulder_stretch"],
+    codo: ["heavy_triceps_ext", "heavy_chest_free", "barbell"],
+    tobillo: ["heavy_calf_stand", "axial_load", "lunge"],
   };
 
   const safeGeneral = {
-    rodilla: [{ name: "Bicicleta estática", joints: [], riskyTags: ["cardio_lowimpact"], equipment: "bike" }],
-    espalda: [{ name: "Control abdominal", joints: ["core"], riskyTags: ["motor_control"], equipment: "bodyweight" }],
-    hombro: [{ name: "Elevaciones laterales", joints: ["hombro"], riskyTags: [], equipment: "manc" }],
-    codo: [{ name: "Curl con banda", joints: ["codo"], riskyTags: ["band"], equipment: "band" }],
-    tobillo: [{ name: "Bicicleta estática", joints: [], riskyTags: ["cardio_lowimpact"], equipment: "bike" }],
-  };
-
-  const splits = {
-    2: [
-      ["pecho_mid","espalda_altas","quads","femorales_gluteos","deltoides","biceps","triceps","core"],
-      ["pecho_sup","pecho_inf","espalda_baja","gemelos","deltoides","biceps","triceps","core"],
+    rodilla: [
+      { name: "Curl femoral sentado (Máquina)", riskyTags: ["machine_safe"], pattern: "curl_leg_safe" },
+      { name: "Extensión de cuádriceps suave", riskyTags: ["machine_safe"], pattern: "ext_leg_safe" },
     ],
-    3: [
-      ["pecho_sup","pecho_mid","deltoides","triceps"],
-      ["espalda_altas","espalda_baja","biceps","core"],
-      ["quads","femorales_gluteos","gemelos"],
+    espalda: [
+      { name: "Remo en máquina (Apoyo al pecho)", riskyTags: ["machine_safe","lumbar_safe"], pattern: "row_horiz_bi" },
+      { name: "Press Pallof (Core seguro)", riskyTags: ["lumbar_safe"], pattern: "core_anti_rot" }
     ],
-    4: [
-      ["pecho_mid","espalda_altas","deltoides","biceps"],
-      ["quads","femorales_gluteos","core","gemelos"],
-      ["pecho_sup","espalda_baja","deltoides","triceps"],
-      ["quads","femorales_gluteos","core","gemelos"],
+    hombro: [
+      { name: "Elevaciones laterales en polea (Liviano)", riskyTags: ["cable_safe"], pattern: "lat_raise_cable" },
+      { name: "Face-pull en polea (Enfoque escápula)", riskyTags: ["cable_safe"], pattern: "rear_delt_cable" }
     ],
-    5: [
-      ["pecho_sup","pecho_mid","deltoides"],
-      ["espalda_altas","espalda_baja","biceps"],
-      ["quads","femorales_gluteos","gemelos"],
-      ["pecho_mid","espalda_altas","deltoides"],
-      ["biceps","triceps","core"],
+    codo: [
+      { name: "Cruces en polea (Enfoque isométrico)", riskyTags: ["cable_safe"], pattern: "fly_iso" }
     ],
   };
 
-  const capsPerFamilyDefault = { pecho: 3, espalda: 3, quads: 3, femorales_gluteos: 3, deltoides: 3, biceps: 2, triceps: 2, gemelos: 2, core: 2 };
-  const weeklySetsBase = { principiante: 8, intermedio: 11, avanzado: 15 };
+  // ---------------------------
+  // 3. ESTRUCTURAS MÉDICAS Y LÍMITES ESTRICTOS (Máximo 7 por día)
+  // ---------------------------
+  const getSplits = (diasRequeridos, nivelUser) => {
+    // Si es principiante hace un poco menos de ejercicios (evita llegar al tope max)
+    const isBeg = nivelUser === "principiante";
+    const vol = (std, beg) => isBeg ? beg : std;
+
+    const structures = {
+      2: [
+        { dia: "Día 1 (Full Body A)", bloques: [
+          { label: "PECHO", pools: ["pecho_plano"], count: 1 },
+          { label: "ESPALDA", pools: ["espalda_vertical", "espalda_horizontal"], count: vol(2, 1) },
+          { label: "CUÁDRICEPS", pools: ["quads"], count: vol(2, 1) },
+          { label: "ISQUIOTIBIALES", pools: ["isquios"], count: 1 }
+        ]}, // Total Avanzado: 6 Ejercicios (Pierna 3)
+        { dia: "Día 2 (Full Body B)", bloques: [
+          { label: "HOMBROS", pools: ["hombro_press", "hombro_lateral"], count: vol(2, 1) },
+          { label: "BÍCEPS", pools: ["biceps"], count: vol(2, 1) },
+          { label: "TRÍCEPS", pools: ["triceps"], count: vol(2, 1) },
+          { label: "GLÚTEOS", pools: ["gluteos"], count: 1 }
+        ]} // Total Avanzado: 7 Ejercicios (Pierna 1)
+      ],
+      3: [
+        { dia: "Día 1 (Empuje)", bloques: [
+          { label: "PECHO", pools: ["pecho_plano", "pecho_inclinado", "pecho_declinado"], count: vol(3, 2) }, // Max Pecho 3
+          { label: "HOMBRO LATERAL Y FRONTAL", pools: ["hombro_lateral"], count: vol(2, 1) },
+          { label: "TRÍCEPS", pools: ["triceps"], count: vol(2, 1) }
+        ]}, // Total Avanzado: 7 Ejercicios
+        { dia: "Día 2 (Tirón)", bloques: [
+          { label: "ESPALDA", pools: ["espalda_vertical", "espalda_horizontal"], count: vol(4, 3) }, // Max Espalda 4
+          { label: "HOMBRO POSTERIOR", pools: ["hombro_posterior"], count: 1 },
+          { label: "BÍCEPS", pools: ["biceps"], count: vol(2, 1) }
+        ]}, // Total Avanzado: 7 Ejercicios
+        { dia: "Día 3 (Piernas)", bloques: [
+          { label: "CUÁDRICEPS", pools: ["quads"], count: vol(2, 2) },
+          { label: "ISQUIOTIBIALES", pools: ["isquios"], count: vol(2, 1) },
+          { label: "GEMELOS", pools: ["gemelos"], count: 1 }
+        ]} // Total Avanzado: 5 Ejercicios (Max Pierna 5)
+      ],
+      4: [
+        { dia: "Día 1 (Torso A)", bloques: [
+          { label: "PECHO", pools: ["pecho_plano", "pecho_inclinado"], count: vol(2, 1) },
+          { label: "ESPALDA", pools: ["espalda_vertical", "espalda_horizontal"], count: vol(2, 1) },
+          { label: "HOMBROS", pools: ["hombro_press", "hombro_lateral"], count: 1 },
+          { label: "BÍCEPS", pools: ["biceps"], count: 1 },
+          { label: "TRÍCEPS", pools: ["triceps"], count: 1 }
+        ]}, // Total Avanzado: 7 Ejercicios
+        { dia: "Día 2 (Piernas A)", bloques: [
+          { label: "CUÁDRICEPS", pools: ["quads"], count: vol(2, 2) },
+          { label: "ISQUIOTIBIALES", pools: ["isquios"], count: 1 },
+          { label: "GLÚTEOS", pools: ["gluteos"], count: 1 },
+          { label: "GEMELOS", pools: ["gemelos"], count: 1 }
+        ]}, // Total Avanzado: 5 Ejercicios
+        { dia: "Día 3 (Torso B)", bloques: [
+          { label: "PECHO", pools: ["pecho_inclinado", "pecho_declinado"], count: vol(2, 1) },
+          { label: "ESPALDA", pools: ["espalda_horizontal", "espalda_vertical"], count: vol(2, 1) },
+          { label: "HOMBROS", pools: ["hombro_lateral", "hombro_posterior"], count: 1 },
+          { label: "BÍCEPS", pools: ["biceps"], count: 1 },
+          { label: "TRÍCEPS", pools: ["triceps"], count: 1 }
+        ]}, // Total Avanzado: 7 Ejercicios
+        { dia: "Día 4 (Piernas B)", bloques: [
+          { label: "ISQUIOTIBIALES", pools: ["isquios"], count: vol(2, 2) },
+          { label: "CUÁDRICEPS", pools: ["quads"], count: 1 },
+          { label: "GLÚTEOS", pools: ["gluteos"], count: 1 },
+          { label: "GEMELOS", pools: ["gemelos"], count: 1 }
+        ]} // Total Avanzado: 5 Ejercicios
+      ],
+      5: [
+        { dia: "Día 1 (Empuje)", bloques: [
+          { label: "PECHO", pools: ["pecho_plano", "pecho_inclinado", "pecho_declinado"], count: vol(4, 3) }, // Max Pecho 4
+          { label: "HOMBROS", pools: ["hombro_press", "hombro_lateral"], count: vol(3, 2) } // Max Hombro 3
+        ]}, // Total Avanzado: 7
+        { dia: "Día 2 (Tirón)", bloques: [
+          { label: "ESPALDA", pools: ["espalda_vertical", "espalda_horizontal"], count: vol(4, 3) }, // Max Espalda 4
+          { label: "BÍCEPS", pools: ["biceps"], count: vol(2, 1) },
+          { label: "TRÍCEPS", pools: ["triceps"], count: 1 }
+        ]}, // Total Avanzado: 7
+        { dia: "Día 3 (Piernas Anterior)", bloques: [
+          { label: "CUÁDRICEPS", pools: ["quads"], count: vol(3, 2) },
+          { label: "GLÚTEOS", pools: ["gluteos"], count: vol(2, 1) }
+        ]}, // Total Avanzado: 5 (Max Pierna 5)
+        { dia: "Día 4 (Torso Pesado)", bloques: [
+          { label: "ESPALDA", pools: ["espalda_vertical", "espalda_horizontal"], count: vol(3, 2) },
+          { label: "PECHO", pools: ["pecho_plano", "pecho_inclinado"], count: vol(3, 2) }
+        ]}, // Total Avanzado: 6
+        { dia: "Día 5 (Piernas Posterior y Hombros)", bloques: [
+          { label: "ISQUIOTIBIALES", pools: ["isquios"], count: vol(3, 2) },
+          { label: "HOMBRO LATERAL Y POST", pools: ["hombro_lateral", "hombro_posterior"], count: vol(3, 2) }
+        ]} // Total Avanzado: 6
+      ],
+    };
+    return structures[diasRequeridos];
+  };
 
   const shuffle = (arr) => {
     const a = arr.slice();
@@ -146,88 +248,18 @@ export default function RoutinesForm() {
     return a;
   };
 
-  const countSessions = (template) => {
-    const counts = {};
-    template.forEach(day => day.forEach(g => counts[g] = (counts[g] || 0) + 1));
-    return counts;
-  };
-
-  const planForMuscle = (muscleKey, sessionsPerWeek, edadNum) => {
-    let weeklyTarget = weeklySetsBase[nivel] || 10;
-    if (edadNum >= 85) weeklyTarget = Math.round(weeklyTarget * 0.45);
-    else if (edadNum >= 80) weeklyTarget = Math.round(weeklyTarget * 0.5);
-    else if (edadNum >= 75) weeklyTarget = Math.round(weeklyTarget * 0.6);
-    else if (edadNum >= 70) weeklyTarget = Math.round(weeklyTarget * 0.7);
-    else if (edadNum >= 65) weeklyTarget = Math.round(weeklyTarget * 0.8);
-    else if (edadNum >= 50) weeklyTarget = Math.round(weeklyTarget * 0.9);
-
-    const setsPerSession = Math.max(1, Math.round(weeklyTarget / Math.max(1, sessionsPerWeek)));
-    let setsPerExercise = 3;
-    if (nivel === "principiante") setsPerExercise = 2;
-    if (edadNum >= 75) setsPerExercise = Math.max(1, setsPerExercise - 1);
-    const ejerciciosPorSesion = Math.max(1, Math.ceil(setsPerSession / setsPerExercise));
-    const repsRange = edadNum >= 75 ? "8-15" : (nivel === "avanzado" ? "6-10" : "8-12");
-    const rest = edadNum >= 75 ? "60-120s" : (nivel === "avanzado" ? "60-90s" : "60-120s");
-    return { ejerciciosPorSesion, setsPerExercise, repsRange, rest, setsPerSession };
-  };
-
-  const groupKeywords = {
-    pecho_sup: ["press","apertura","inclinado","banca"], pecho_mid: ["press","banca","apertura"], pecho_inf: ["press","declinado","fondos"],
-    espalda_altas: ["remo","jalon","pull","row"], espalda_baja: ["remo","levantamiento","peso muerto","extensión","espalda"],
-    quads: ["sentadilla","prensa","extensión","pierna"], femorales_gluteos: ["puente","hip","zancada","step","curl femoral"],
-    gemelos: ["talon","gemelo","elevación"], deltoides: ["press","elevacion","lateral","hombro"],
-    biceps: ["curl","martillo"], triceps: ["extensión","press cerrado","fondos"], core: ["plancha","abdominal","control","core"],
-  };
-
-  const toLower = (s = "") => s.toLowerCase();
-  const isFunctionalRelevant = (ex, groupKey) => {
-    const mainJointsByGroup = {
-      pecho_sup: ["pecho","hombro"], pecho_mid: ["pecho","hombro"], pecho_inf: ["pecho","hombro"],
-      espalda_altas: ["espalda","hombro"], espalda_baja: ["espalda","cadera"], quads: ["rodilla","cadera"],
-      femorales_gluteos: ["cadera","rodilla","gluteo"], gemelos: ["tobillo"], deltoides: ["hombro"],
-      biceps: ["codo"], triceps: ["codo"], core: ["core","espalda"],
-    };
-    const prim = mainJointsByGroup[groupKey] || [];
-    if (Array.isArray(ex.joints) && ex.joints.some(j => prim.includes(j))) return true;
-    const keywords = groupKeywords[groupKey] || [];
-    const name = toLower(ex.name || "");
-    if (keywords.some(k => name.includes(k))) return true;
-    return false;
-  };
-
-  const avoidTagsByInjury = {
-    rodilla: ["heavy_knee_flexion", "high_impact"],
-    espalda: ["lumbar_load","hip_hinge","axial_load","extension","barbell"],
-    hombro: ["overhead_heavy","internal_rotation","avoid"],
-    codo: ["high_elbow_torque","barbell"],
-    tobillo: ["high_impact"],
-  };
-
-  const filterByLesionsAndRelevance = (pool, lesionesArray = [], groupKey) => {
-    let safe = pool.slice();
-    safe = safe.filter(ex => {
-      if (Array.isArray(ex.joints) && ex.joints.some(j => lesionesArray.includes(j))) return false;
-      if (Array.isArray(ex.riskyTags) && lesionesArray.some(l => (avoidTagsByInjury[l] || []).some(t => ex.riskyTags.includes(t)))) return false;
+  const filterByLesions = (pool, lesionesArray = []) => {
+    if (!lesionesArray.length) return pool;
+    return pool.filter(ex => {
+      if (Array.isArray(ex.riskyTags)) {
+        const hasRisk = lesionesArray.some(lesion => {
+          const riskyTagsForLesion = avoidTagsByInjury[lesion] || [];
+          return riskyTagsForLesion.some(tag => ex.riskyTags.includes(tag));
+        });
+        if (hasRisk) return false;
+      }
       return true;
     });
-
-    const relevant = safe.filter(ex => isFunctionalRelevant(ex, groupKey));
-    let candidates = (relevant.length >= 2) ? shuffle(relevant) : shuffle(relevant.concat(safe.filter(s => !relevant.includes(s))));
-    if (candidates.length < 2) {
-      const groupAlts = safeByGroup[groupKey] || [];
-      const groupAltsRelevant = groupAlts.filter(a => isFunctionalRelevant(a, groupKey));
-      groupAltsRelevant.forEach(a => { if (!candidates.some(c => c.name === a.name)) candidates.push(a); });
-    }
-    if (candidates.length < 2 && lesionesArray.length > 0) {
-      lesionesArray.forEach(l => {
-        const gens = (safeGeneral[l] || []).filter(a => isFunctionalRelevant(a, groupKey));
-        gens.forEach(g => { if (!candidates.some(c => c.name === g.name)) candidates.push(g); });
-      });
-    }
-    if (candidates.length === 0) return pool.slice();
-    const uniq = [];
-    candidates.forEach(c => { if (!uniq.some(u => u.name === c.name)) uniq.push(c); });
-    return uniq;
   };
 
   const generarRutina = async () => {
@@ -237,120 +269,96 @@ export default function RoutinesForm() {
     setSaveMessage("");
 
     const edadNum = parseInt(edad, 10);
-    if (!edad || isNaN(edadNum) || edadNum < 15 || edadNum > 100) {
-      setError("Ingresa una edad válida entre 15 y 100.");
-      return;
-    }
-    
-    const diasNum = Number(dias);
-    if (!splits[diasNum]) {
-      setError("Selecciona entre 2 y 5 días.");
-      return;
-    }
+    if (!edad || isNaN(edadNum) || edadNum < 15 || edadNum > 100) return setError("Ingresa una edad válida (15-100).");
+    if (dias < 2 || dias > 5) return setError("Selecciona entre 2 y 5 días.");
 
-    const capsPerFamily = { ...capsPerFamilyDefault };
-    if (edadNum >= 80) Object.keys(capsPerFamily).forEach(k => capsPerFamily[k] = Math.max(1, Math.floor(capsPerFamily[k] * 0.5)));
-    else if (edadNum >= 70) Object.keys(capsPerFamily).forEach(k => capsPerFamily[k] = Math.max(1, Math.floor(capsPerFamily[k] * 0.75)));
-
-    const template = splits[diasNum];
-    const sessionsCount = countSessions(template);
-    const dayNamesMap = { 
-        2:["Lunes","Jueves"], 
-        3:["Lunes","Miércoles","Viernes"], 
-        4:["Lunes","Martes","Jueves","Viernes"], 
-        5:["Lunes","Martes","Miércoles","Jueves","Viernes"] 
-    };
-    const dayNames = dayNamesMap[diasNum];
-
+    const layout = getSplits(Number(dias), nivel);
     const resultado = [];
     const warnSet = new Set();
-    const usedExerciseCountWeek = {};
-    const maxPerWeek = 2;
     const lesionesValidas = hasLesion === "si" ? lesiones.filter(l => l) : [];
 
-    template.forEach((dayGroups, dIdx) => {
-      const dayName = dayNames[dIdx] || `Día ${dIdx+1}`;
+    const defaultSets = nivel === "principiante" ? 3 : 4;
+    const defaultReps = edadNum >= 65 ? "10-15" : (nivel === "avanzado" ? "6-10" : "8-12");
+    const defaultRest = edadNum >= 65 ? "90s" : (nivel === "avanzado" ? "60-90s" : "60-120s");
+
+    layout.forEach((diaInfo) => {
       const gruposHoy = [];
-      const familyCountToday = {};
-      const usedThisDay = new Set();
+      const usedPatternsThisDay = new Set(); 
+      const usedNamesThisDay = new Set();    
+      
+      let totalExercisesToday = 0; // CANDADO DE SEGURIDAD MÁXIMO 7
 
-      dayGroups.forEach((gKey) => {
-        const pool = pools[gKey];
-        if (!pool) return;
+      diaInfo.bloques.forEach((bloque) => {
+        let rawPool = [];
+        bloque.pools.forEach(p => { if (pools[p]) rawPool = [...rawPool, ...pools[p]]; });
 
-        const sessionsPerWeek = sessionsCount[gKey] || 1;
-        const plan = planForMuscle(gKey, sessionsPerWeek, edadNum);
-        const candidates = (lesionesValidas.length > 0) ? filterByLesionsAndRelevance(pool, lesionesValidas, gKey) : shuffle(pool.slice());
+        let safePool = filterByLesions(rawPool, lesionesValidas);
+        let isAdapted = false;
 
-        if (lesionesValidas.length > 0 && candidates.length && candidates.every(c => pool.some(p => p.name === c.name))) {
-          const poolHadRisk = pool.some(ex => Array.isArray(ex.joints) && ex.joints.some(j => lesionesValidas.includes(j))
-            || (Array.isArray(ex.riskyTags) && lesionesValidas.some(l => (avoidTagsByInjury[l] || []).some(t => ex.riskyTags.includes(t)))));
-          if (poolHadRisk) warnSet.add(`Adaptado "${gKey.replace(/_/g," ")}" por lesión (${lesionesValidas.join(", ")}).`);
+        if (safePool.length < bloque.count && lesionesValidas.length > 0) {
+          lesionesValidas.forEach(l => {
+            if (safeGeneral[l]) safePool = [...safePool, ...safeGeneral[l]];
+          });
+          isAdapted = true;
+          warnSet.add(`Se aplicaron reemplazos seguros en: ${bloque.label}.`);
+        } else if (safePool.length < rawPool.length && lesionesValidas.length > 0) {
+          isAdapted = true;
+          warnSet.add(`Filtramos ejercicios lesivos en: ${bloque.label}.`);
         }
 
-        const family = (() => {
-          if (gKey.startsWith("pecho")) return "pecho";
-          if (gKey.startsWith("espalda")) return "espalda";
-          if (gKey.startsWith("quads")) return "quads";
-          if (gKey.startsWith("femorales")) return "femorales_gluteos";
-          if (gKey.startsWith("gemelos")) return "gemelos";
-          if (gKey.startsWith("deltoides")) return "deltoides";
-          if (gKey.startsWith("biceps")) return "biceps";
-          if (gKey.startsWith("triceps")) return "triceps";
-          if (gKey.startsWith("core")) return "core";
-          return gKey;
-        })();
+        const candidates = shuffle(safePool);
+        const selectedForGroup = [];
 
-        const remainingCap = (capsPerFamily[family] || 2) - (familyCountToday[family] || 0);
-        const take = Math.max(1, Math.min(plan.ejerciciosPorSesion, remainingCap));
+        for (const ex of candidates) {
+          if (selectedForGroup.length >= bloque.count) break;
+          if (totalExercisesToday >= 7) break; // 👉 TOPE ABSOLUTO 7 EJERCICIOS
+          
+          if (usedNamesThisDay.has(ex.name)) continue;
+          if (usedPatternsThisDay.has(ex.pattern)) continue; 
 
-        const selected = [];
-        let ci = 0;
-        const shuffledCandidates = shuffle(candidates.slice());
+          selectedForGroup.push({
+            name: ex.name,
+            sets: defaultSets,
+            reps: defaultReps,
+            rest: defaultRest,
+            modified: isAdapted
+          });
 
-        while (selected.length < take && ci < shuffledCandidates.length) {
-          const ex = shuffledCandidates[ci++];
-          if (!ex || !ex.name) continue;
-          if (usedThisDay.has(ex.name)) continue;
-          if ((usedExerciseCountWeek[ex.name] || 0) >= maxPerWeek) continue;
-          if (!isFunctionalRelevant(ex, gKey)) continue;
-
-          const isFromOriginalPool = pool.some(p => p.name === ex.name);
-          const modifiedFlag = (lesionesValidas.length > 0 && !isFromOriginalPool);
-
-          selected.push({ name: ex.name, sets: plan.setsPerExercise, reps: plan.repsRange, rest: plan.rest, modified: modifiedFlag });
-          usedThisDay.add(ex.name);
-          usedExerciseCountWeek[ex.name] = (usedExerciseCountWeek[ex.name] || 0) + 1;
+          usedPatternsThisDay.add(ex.pattern);
+          usedNamesThisDay.add(ex.name);
+          totalExercisesToday++;
         }
 
-        // Fallbacks por si faltaron ejercicios
-        if (selected.length < take) {
-          const fallbacks = [];
-          if (safeByGroup[gKey] && safeByGroup[gKey].length) safeByGroup[gKey].forEach(s => fallbacks.push(s));
-          lesionesValidas.forEach(l => { (safeGeneral[l] || []).forEach(s => fallbacks.push(s)); });
-          const fallbackUniq = [];
-          fallbacks.forEach(f => { if (!fallbackUniq.some(u => u.name === f.name)) fallbackUniq.push(f); });
+        // Si faltaron ejercicios por el filtro estricto de patrones, aflojamos solo el patrón (pero NUNCA el nombre ni pasamos de 7)
+        if (selectedForGroup.length < bloque.count && totalExercisesToday < 7) {
+          for (const ex of candidates) {
+            if (selectedForGroup.length >= bloque.count) break;
+            if (totalExercisesToday >= 7) break; // 👉 TOPE ABSOLUTO 7 EJERCICIOS
 
-          let fi = 0;
-          while (selected.length < take && fi < fallbackUniq.length) {
-            const ex = fallbackUniq[fi++];
-            if (!ex || !ex.name || usedThisDay.has(ex.name) || (usedExerciseCountWeek[ex.name] || 0) >= maxPerWeek || !isFunctionalRelevant(ex, gKey)) continue;
-            selected.push({ name: ex.name, sets: Math.max(1, plan.setsPerExercise - 1), reps: plan.repsRange, rest: plan.rest, note: "sustituto", modified: true });
-            usedThisDay.add(ex.name);
-            usedExerciseCountWeek[ex.name] = (usedExerciseCountWeek[ex.name] || 0) + 1;
+            if (usedNamesThisDay.has(ex.name)) continue;
+
+            selectedForGroup.push({
+              name: ex.name,
+              sets: defaultSets,
+              reps: defaultReps,
+              rest: defaultRest,
+              modified: isAdapted
+            });
+            
+            usedNamesThisDay.add(ex.name);
+            totalExercisesToday++;
           }
         }
 
-        if (selected.length > 0) {
-          familyCountToday[family] = (familyCountToday[family] || 0) + selected.length;
+        if (selectedForGroup.length > 0) {
           gruposHoy.push({
-            grupoLabel: gKey.replace(/_/g, " "),
-            ejercicios: selected,
+            grupoLabel: bloque.label,
+            ejercicios: selectedForGroup
           });
         }
       });
 
-      resultado.push({ dia: dayName, trabajo: gruposHoy });
+      resultado.push({ dia: diaInfo.dia, trabajo: gruposHoy });
     });
 
     setWarnings(Array.from(warnSet));
@@ -366,114 +374,68 @@ export default function RoutinesForm() {
       try {
         const { data: authData } = await supabase.auth.getSession();
         const userId = authData?.session?.user?.id;
+        const userDataStr = localStorage.getItem("userData");
+        const gymId = userDataStr ? JSON.parse(userDataStr).gym_id : null;
 
-        if (!userId) {
+        if (!userId || !gymId) {
           setSaveMessage("Error: Tu sesión expiró o no estás logueado.");
           setSaving(false);
           return;
         }
 
-        // 👉 0. GUARDAR ALERTAS MÉDICAS (NUEVO)
         if (hasLesion === "si" && lesiones.length > 0) {
-          
-          // Primero borramos las alertas anteriores que pudiera tener para no duplicar data
-          await supabase
-            .from('medical_alerts')
-            .delete()
-            .eq('user_id', userId);
-
-          // Armamos el array de alertas médicas a insertar
+          await supabase.from('medical_alerts').delete().eq('user_id', userId).eq('gym_id', gymId);
           const alertasToInsert = lesiones.map(zona => ({
-            user_id: userId,
-            name: `Lesión en ${zona.charAt(0).toUpperCase() + zona.slice(1)}`, // Ej: "Lesión en Hombro"
-            severity: "Media", // 'Baja', 'Media', 'Alta' (La guardamos en Media por defecto)
-            observation: "Reportada automáticamente por el usuario al generar su rutina en la app."
+            user_id: userId, gym_id: gymId, 
+            name: `Lesión en ${zona.charAt(0).toUpperCase() + zona.slice(1)}`,
+            severity: "Media", observation: "Reportada automáticamente por el usuario."
           }));
-
-          // Las insertamos en la tabla
-          const { error: alertError } = await supabase
-            .from('medical_alerts')
-            .insert(alertasToInsert);
-
-          if (alertError) console.error("Error guardando alertas médicas:", alertError);
+          await supabase.from('medical_alerts').insert(alertasToInsert);
         }
 
-        // 1. ELIMINAR FISICAMENTE las rutinas anteriores. 
-        await supabase
-          .from('routines')
-          .delete()
-          .eq('user_id', userId);
+        await supabase.from('routines').delete().eq('user_id', userId).eq('gym_id', gymId); 
 
-        // 2. Insertar la nueva rutina en 'routines'
         const { data: routineData, error: routineError } = await supabase
           .from('routines')
-          .insert({
-            user_id: userId,
-            name: `Plan Hipertrofia - ${nivelMap[nivel]}`,
-            is_active: false // Se guarda como pendiente (false)
-          })
-          .select()
-          .single();
+          .insert({ user_id: userId, gym_id: gymId, name: `Plan Estructurado - ${nivelMap[nivel]}`, is_active: false })
+          .select().single();
 
         if (routineError) throw routineError;
         const routineId = routineData.id;
 
-        // 3. Insertar Días, Bloques Musculares y Ejercicios
         for (let dIdx = 0; dIdx < resultado.length; dIdx++) {
           const day = resultado[dIdx];
-          
-          // Insertar Día ('routine_days')
           const { data: dayData, error: dayError } = await supabase
             .from('routine_days')
-            .insert({
-              routine_id: routineId,
-              day_name: day.dia,
-              order_index: dIdx
-            })
-            .select()
-            .single();
+            .insert({ routine_id: routineId, day_name: day.dia, order_index: dIdx })
+            .select().single();
             
           if (dayError) throw dayError;
-          const dayId = dayData.id;
 
-          // Insertar Bloques Musculares ('muscle_blocks')
           for (let gIdx = 0; gIdx < day.trabajo.length; gIdx++) {
             const group = day.trabajo[gIdx];
-
             const { data: blockData, error: blockError } = await supabase
               .from('muscle_blocks')
-              .insert({
-                day_id: dayId,
-                muscle_name: group.grupoLabel,
-                order_index: gIdx
-              })
-              .select()
-              .single();
+              .insert({ day_id: dayData.id, muscle_name: group.grupoLabel, order_index: gIdx })
+              .select().single();
 
             if (blockError) throw blockError;
-            const blockId = blockData.id;
 
-            // Formatear array de Ejercicios
             const exercisesToInsert = group.ejercicios.map((ex) => ({
-              block_id: blockId,
+              block_id: blockData.id,
               name: ex.modified ? `${ex.name} (Adaptado)` : ex.name,
               sets: String(ex.sets), 
-              reps: `${ex.reps} | Descanso: ${ex.rest}`, 
+              reps: `${ex.reps} | Desc: ${ex.rest}`, 
               video_url: null 
             }));
 
             if (exercisesToInsert.length > 0) {
-                const { error: exercisesError } = await supabase
-                  .from('exercises')
-                  .insert(exercisesToInsert);
-    
-                if (exercisesError) throw exercisesError;
+                await supabase.from('exercises').insert(exercisesToInsert);
             }
           }
         }
 
         setSaveMessage("¡Plan generado! Pendiente de aprobación por tu entrenador.");
-
       } catch (error) {
         console.error("Error guardando en Supabase:", error);
         setSaveMessage("Hubo un error al guardar la rutina.");
@@ -514,10 +476,10 @@ export default function RoutinesForm() {
           <div className="form-group">
             <label>Días por semana</label>
             <select className="glass-select" value={dias} onChange={(e)=>setDias(Number(e.target.value))}>
-              <option value={2}>2 días (Cuerpo completo)</option>
-              <option value={3}>3 días (Empuje/Tirón/Pierna)</option>
-              <option value={4}>4 días (Torso/Pierna x2)</option>
-              <option value={5}>5 días (Weider / Frecuencia mixta)</option>
+              <option value={2}>2 Días (Cuerpo Completo)</option>
+              <option value={3}>3 Días (Push / Pull / Legs)</option>
+              <option value={4}>4 Días (Torso / Pierna)</option>
+              <option value={5}>5 Días (PPL + Antagonistas)</option>
             </select>
           </div>
 
@@ -547,11 +509,8 @@ export default function RoutinesForm() {
                       type="button"
                       className={`chip-btn ${isActive ? "active" : ""}`}
                       onClick={() => {
-                        if (isActive) {
-                          setLesiones(lesiones.filter(l => l !== zona.id));
-                        } else {
-                          setLesiones([...lesiones, zona.id]);
-                        }
+                        if (isActive) setLesiones(lesiones.filter(l => l !== zona.id));
+                        else setLesiones([...lesiones, zona.id]);
                       }}
                     >
                       {zona.label}
@@ -565,7 +524,7 @@ export default function RoutinesForm() {
           {error && <div className="error-badge">{error}</div>}
 
           <button type="button" className="btn-primary generate-btn" onClick={generarRutina} disabled={saving}>
-            {saving ? "Generando y Guardando..." : "Construir Rutina"}
+            {saving ? "Generando y Guardando..." : "Construir Rutina Equilibrada"}
           </button>
         </form>
       </section>
@@ -583,7 +542,7 @@ export default function RoutinesForm() {
             <div className="warning-card slide-up" style={{ animationDelay: "0.25s" }}>
               <span className="warning-icon">⚠️</span>
               <div>
-                <strong>Adaptaciones aplicadas:</strong>
+                <strong>Modificaciones clínicas aplicadas:</strong>
                 <ul>{warnings.map((w, i) => <li key={i}>{w}</li>)}</ul>
               </div>
             </div>
@@ -607,7 +566,7 @@ export default function RoutinesForm() {
                               <span className="ejercicio-name">{ex.name}</span>
                               <span className="ejercicio-details">{ex.sets} x {ex.reps} • {ex.rest}</span>
                             </div>
-                            {ex.modified && <span className="badge-sust">SUST</span>}
+                            {ex.modified && <span className="badge-sust" title="Ejercicio adaptado para proteger tu lesión">Seguro</span>}
                           </li>
                         ))}
                       </ul>

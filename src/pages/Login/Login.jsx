@@ -4,7 +4,6 @@ import { supabase } from "../../supabaseClient";
 import "./Login.css";
 
 const Login = () => {
-  // Supabase por defecto usa Email para el login
   const [login, setLogin] = useState("");  
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,12 +18,11 @@ const Login = () => {
 
     try {
       // 1. Llamada a la autenticación nativa de Supabase
-      const { data, error: supabaseError } = await supabase.auth.signInWithPassword({
+      const { data: authData, error: supabaseError } = await supabase.auth.signInWithPassword({
         email: login, 
         password: password,
       });
 
-      // 2. Manejo de errores de Supabase
       if (supabaseError) {
         throw new Error(
           supabaseError.message === "Invalid login credentials" 
@@ -33,13 +31,46 @@ const Login = () => {
         );
       }
 
-      console.log("Login exitoso con Supabase:", data);
+      // 2. 👉 BUSCAMOS EN CLIENTES (Usando maybeSingle para evitar el error 404 en consola)
+      let { data: profileData, error: profileError } = await supabase
+        .from('clientes')
+        .select('*')
+        .eq('email', login)
+        .maybeSingle();
 
-      // 3. Extraer Token y ID del usuario desde la respuesta de Supabase
-      const token = data.session.access_token;
-      const userId = data.user.id;
+      let isStaffMode = false;
 
-      // 4. Guardar en localStorage manteniendo la compatibilidad con el resto de tu app (RoutinesForm, etc.)
+      // 3. 👉 PLAN B: Si no es un cliente, vemos si es un Administrador probando la app
+      if (!profileData) {
+        const { data: staffData } = await supabase
+          .from('users')
+          .select('*')
+          .eq('email', login)
+          .maybeSingle();
+
+        if (staffData) {
+          profileData = staffData;
+          isStaffMode = true; // Entró un admin
+        }
+      }
+
+      // 4. Si definitivamente no está en ninguna de las dos tablas, lo rebotamos
+      if (!profileData) {
+        await supabase.auth.signOut();
+        throw new Error("No se encontró el perfil asociado a este correo.");
+      }
+
+      // 5. Verificar si está dado de baja (Baja Lógica)
+      if (profileData.enabled === false) {
+        await supabase.auth.signOut();
+        throw new Error("Tu cuenta se encuentra inactiva. Comunicate con recepción.");
+      }
+
+      console.log(isStaffMode ? "Login de Admin (Modo Prueba)" : "Login de Alumno:", profileData);
+
+      // 6. Extraer Token y guardar en localStorage
+      const token = authData.session.access_token;
+
       if (token) {
         localStorage.setItem("crmToken", token);
       }
@@ -47,10 +78,10 @@ const Login = () => {
       localStorage.setItem(
         "userData",
         JSON.stringify({
-          login: data.user.email,
+          ...profileData, 
+          login: authData.user.email,
           isAuthenticated: true,
-          id: userId,
-          role: "user", // Supabase maneja roles en tablas aparte, por ahora lo dejamos default
+          role: isStaffMode ? "admin" : "user",
           loginTime: new Date().toISOString(),
         })
       );
@@ -87,7 +118,7 @@ const Login = () => {
           <div className="form-group">
             <label className="login-label">Correo Electrónico</label>
             <input
-              type="email" /* Supabase requiere email válido por defecto */
+              type="email"
               className="glass-input"
               value={login}
               onChange={(e) => setLogin(e.target.value)}

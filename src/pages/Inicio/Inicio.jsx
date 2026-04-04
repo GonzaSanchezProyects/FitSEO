@@ -165,7 +165,6 @@ const Inicio = () => {
   const [dietStats, setDietStats] = useState({ kcal: 0, p: 0, c: 0, f: 0 });
   const [weightHistory, setWeightHistory] = useState([]);
   
-  // 👉 NUEVO ESTADO: Controla si el usuario está activo o no
   const [isUserActive, setIsUserActive] = useState(true);
 
   // Asistencia dinámica
@@ -194,7 +193,10 @@ const Inicio = () => {
       const { data: authData } = await supabase.auth.getSession();
       const userId = authData?.session?.user?.id;
       
-      if (!userId) {
+      const userDataStr = localStorage.getItem("userData");
+      const gymId = userDataStr ? JSON.parse(userDataStr).gym_id : null;
+
+      if (!userId || !gymId) {
         navigate("/login");
         return;
       }
@@ -204,24 +206,30 @@ const Inicio = () => {
         .from('users')
         .select('first_name, enabled')
         .eq('id', userId)
+        .eq('gym_id', gymId) // 👉 MULTI-TENANT
         .single();
 
       if (userError) throw userError;
 
       if (userInfo.first_name) setUserName(userInfo.first_name);
 
-      // Leemos estrictamente el booleano enabled
       const estaActivo = userInfo.enabled === true || String(userInfo.enabled).toLowerCase() === "true";
       setIsUserActive(estaActivo);
 
-      // Si no está activo, detenemos la carga de datos del dashboard para ahorrar consultas
       if (!estaActivo) {
         setIsLoading(false);
         return; 
       }
 
       // 1. Dieta
-      const { data: dietPlan } = await supabase.from('diet_plans').select('daily_meals ( breakfast, lunch, snack, dinner )').eq('user_id', userId).eq('is_active', true).single();
+      const { data: dietPlan } = await supabase
+        .from('diet_plans')
+        .select('daily_meals ( breakfast, lunch, snack, dinner )')
+        .eq('user_id', userId)
+        .eq('gym_id', gymId) // 👉 MULTI-TENANT
+        .eq('is_active', true)
+        .single();
+
       if (dietPlan && dietPlan.daily_meals) {
         let totalKcal = 0, totalP = 0, totalC = 0, totalF = 0;
         let dayCount = dietPlan.daily_meals.length || 1;
@@ -237,10 +245,16 @@ const Inicio = () => {
       }
 
       // 2. Peso
-      const { data: weights } = await supabase.from('weight_logs').select('weight, created_at').eq('user_id', userId).order('created_at', { ascending: true }); 
+      const { data: weights } = await supabase
+        .from('weight_logs')
+        .select('weight, created_at')
+        .eq('user_id', userId)
+        .eq('gym_id', gymId) // 👉 MULTI-TENANT
+        .order('created_at', { ascending: true }); 
+      
       if (weights && weights.length > 0) setWeightHistory(weights);
       else {
-          const userData = JSON.parse(localStorage.getItem("userData") || "{}");
+          const userData = JSON.parse(userDataStr || "{}");
           if (userData.weight_kg) setWeightHistory([{ weight: userData.weight_kg, created_at: new Date().toISOString() }]);
       }
 
@@ -250,6 +264,7 @@ const Inicio = () => {
         .from('access_logs')
         .select('check_in_time')
         .eq('user_id', userId)
+        .eq('gym_id', gymId) // 👉 MULTI-TENANT
         .gte('check_in_time', startOfWeek.toISOString());
 
       if (logs) {
@@ -290,9 +305,20 @@ const Inicio = () => {
     try {
       const { data: authData } = await supabase.auth.getSession();
       const userId = authData?.session?.user?.id;
-      const { error } = await supabase.from('weight_logs').insert({ user_id: userId, weight: parseFloat(newWeightInput) });
+      
+      const userDataStr = localStorage.getItem("userData");
+      const gymId = userDataStr ? JSON.parse(userDataStr).gym_id : null;
+
+      // 👉 MULTI-TENANT: Insertar enviando gym_id
+      const { error } = await supabase.from('weight_logs').insert({ 
+        user_id: userId, 
+        gym_id: gymId,
+        weight: parseFloat(newWeightInput) 
+      });
       if (error) throw error;
-      await supabase.from('users').update({ weight_kg: parseFloat(newWeightInput) }).eq('id', userId);
+
+      await supabase.from('users').update({ weight_kg: parseFloat(newWeightInput) }).eq('id', userId).eq('gym_id', gymId);
+      
       await fetchDashboardData();
       setShowWeightModal(false);
       setNewWeightInput("");
@@ -327,7 +353,6 @@ const Inicio = () => {
         <div className="header-title-row">
           <h1 className="user-name">Hola, {userName}</h1>
           
-          {/* CARTELITO DINÁMICO: Verde si activo, Rojo si inactivo */}
           <div className={`status-pill ${isUserActive ? 'active' : 'inactive'} glass-pill`}>
             <div className="pulse-dot" style={{ backgroundColor: isUserActive ? '#10B981' : '#EF4444' }}></div>
             {isUserActive ? 'Activo' : 'Inactivo'}

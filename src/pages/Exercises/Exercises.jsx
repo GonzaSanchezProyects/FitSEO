@@ -6,7 +6,7 @@ import { Accordion, AccordionSummary, AccordionDetails } from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import YouTubeIcon from "@mui/icons-material/YouTube"; 
 import AutoStoriesIcon from "@mui/icons-material/AutoStories"; 
-import { useNavigate } from "react-router-dom"; // 👉 Ya estaba importado, ¡genial!
+import { useNavigate } from "react-router-dom"; 
 import { supabase } from "../../supabaseClient"; 
 import { FiActivity, FiRefreshCw, FiAlertCircle } from "react-icons/fi";
 
@@ -115,11 +115,13 @@ const Exercises = () => {
     try {
       const { data: authData } = await supabase.auth.getSession();
       const userId = authData?.session?.user?.id;
+      
+      const userDataStr = localStorage.getItem("userData");
+      const gymId = userDataStr ? JSON.parse(userDataStr).gym_id : null;
 
-      // 👉 VALIDACIÓN DE RUTA: Si no hay usuario, mandamos al login inmediatamente
-      if (!userId) {
+      if (!userId || !gymId) {
         navigate("/login");
-        return; // Cortamos la ejecución aquí
+        return; 
       }
 
       const { data: routine, error: dbError } = await supabase
@@ -137,6 +139,7 @@ const Exercises = () => {
           )
         `)
         .eq('user_id', userId)
+        .eq('gym_id', gymId) // 👉 AGREGADO: Filtro Multi-tenant
         .eq('is_active', true)
         .single(); 
 
@@ -244,7 +247,7 @@ const Exercises = () => {
     );
   };
 
-  // --- ESTADOS DE CARGA Y VACÍO (Premium) ---
+  // --- ESTADOS DE CARGA Y VACÍO ---
   if (loadingPlan) return (
     <div className="dashboard-container exercises-container">
       <div className="status-state-card fade-in">
@@ -292,7 +295,6 @@ const Exercises = () => {
     </div>
   );
 
-  // --- RENDERIZADO DE LA RUTINA ---
   const exercisesForDay = plan[selectedDay] || {};
   const flatExercises = Object.values(exercisesForDay).flat();
   const completedCount = flatExercises.filter((ex) => !!completed[selectedDay]?.[ex.id]).length;
