@@ -20,7 +20,6 @@ const QRPage = () => {
     // 👉 NUEVO: Creamos el Payload que incluye el DNI y a qué gimnasio pertenece
     const payload = {
       dni: userData.dni,
-      gym_id: userData.gym_id
     };
 
     // Convertimos el objeto en una cadena para el código QR

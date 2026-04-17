@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from "react";
 import "./Perfil.css";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../../supabaseClient"; 
-import { 
-  FiTrendingUp, FiCreditCard, FiActivity, 
-  FiPieChart, FiChevronRight, FiLogOut, FiMessageCircle
-} from "react-icons/fi";
+import { supabase } from "../../supabaseClient";
+import { FiTrendingUp, FiCreditCard, FiActivity, FiPieChart, FiChevronRight, FiLogOut, FiMessageCircle } from "react-icons/fi";
 
 const Perfil = () => {
   const navigate = useNavigate();
@@ -19,50 +16,26 @@ const Perfil = () => {
         const { data: authData } = await supabase.auth.getSession();
         const userId = authData?.session?.user?.id;
         const userEmail = authData?.session?.user?.email;
-        
-        const userDataStr = localStorage.getItem("userData");
-        const gymId = userDataStr ? JSON.parse(userDataStr).gym_id : null;
-
-        if (!userId || !gymId) {
-          navigate("/login");
-          return;
-        }
+        if (!userId) { navigate("/login"); return; }
 
         const { data: userRecord } = await supabase
-          .from('users')
-          .select('first_name, last_name, weight_kg')
-          .eq('id', userId)
-          .eq('gym_id', gymId) // 👉 AGREGADO: Filtro Multi-tenant
-          .single();
+          .from('users').select('first_name, last_name, weight_kg').eq('id', userId).single();
 
         if (userRecord) {
-          setUserData({
-            firstName: userRecord.first_name || "Usuario",
-            lastName: userRecord.last_name || "",
-            email: userEmail || "Sin email registrado"
-          });
-          setCurrentWeight(userRecord.weight_kg || 0); 
+          setUserData({ firstName: userRecord.first_name || "Usuario", lastName: userRecord.last_name || "", email: userEmail || "Sin email registrado" });
+          setCurrentWeight(userRecord.weight_kg || 0);
         }
 
         const { data: weightLogs } = await supabase
-          .from('weight_logs')
-          .select('weight')
-          .eq('user_id', userId)
-          .eq('gym_id', gymId) // 👉 AGREGADO: Filtro Multi-tenant
-          .order('created_at', { ascending: false })
-          .limit(1);
+          .from('weight_logs').select('weight').eq('user_id', userId).order('created_at', { ascending: false }).limit(1);
 
-        if (weightLogs && weightLogs.length > 0) {
-          setCurrentWeight(weightLogs[0].weight);
-        }
-
+        if (weightLogs?.length > 0) setCurrentWeight(weightLogs[0].weight);
       } catch (err) {
         console.error("Error cargando el perfil:", err);
       } finally {
         setLoading(false);
       }
     };
-
     fetchProfileData();
   }, [navigate]);
 
@@ -73,54 +46,36 @@ const Perfil = () => {
   };
 
   const handleLogout = async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch (error) {
-      console.error("Error al cerrar sesión:", error);
-    } finally {
-      localStorage.removeItem("crmToken");
-      localStorage.removeItem("userData");
-      window.location.href = "/"; 
-    }
+    try { await supabase.auth.signOut(); } catch (error) { console.error(error); }
+    finally { localStorage.removeItem("userData"); window.location.href = "/"; }
   };
 
   const handleSupportClick = () => {
-    const phoneNumber = "5492610000000"; 
+    const phoneNumber = "5492610000000";
     const message = "Hola, necesito ayuda con mi cuenta en la app.";
     window.open(`https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
-  if (loading) {
-    return (
-      <div className="dashboard-container profile-wrapper">
-        <header className="dashboard-header fade-in">
-          <p className="greeting">Cargando perfil...</p>
-        </header>
-      </div>
-    );
-  }
+  if (loading) return (
+    <div className="dashboard-container profile-wrapper">
+      <header className="dashboard-header fade-in"><p className="greeting">Cargando perfil...</p></header>
+    </div>
+  );
 
   return (
     <div className="dashboard-container profile-wrapper">
       <header className="dashboard-header fade-in">
-        <div>
-          <p className="greeting">Ajustes de cuenta</p>
-          <h1 className="user-name">Mi Perfil</h1>
-        </div>
+        <div><p className="greeting">Ajustes de cuenta</p><h1 className="user-name">Mi Perfil</h1></div>
       </header>
-
       <div className="bento-grid">
         <section className="bento-card user-card slide-up" style={{ animationDelay: "0.1s" }}>
-          <div className="avatar-container">
-            <div className="avatar-initials">{getInitials()}</div>
-          </div>
+          <div className="avatar-container"><div className="avatar-initials">{getInitials()}</div></div>
           <div className="user-info">
             <h2 className="profile-name">{userData.firstName} {userData.lastName}</h2>
             <p className="profile-email">{userData.email}</p>
             <span className="badge-premium">Miembro Premium</span>
           </div>
         </section>
-
         <div className="profile-stats-grid slide-up" style={{ animationDelay: "0.2s" }}>
           <div className="stat-box glass-box-inner">
             <span className="stat-icon"><FiTrendingUp /></span>
@@ -135,7 +90,6 @@ const Perfil = () => {
             <span className="stat-desc">Vence: 15/12</span>
           </div>
         </div>
-
         <section className="bento-card actions-card slide-up" style={{ animationDelay: "0.3s" }}>
           <h3 className="section-subtitle">Configuración y Ayuda</h3>
           <div className="action-list">
@@ -157,12 +111,8 @@ const Perfil = () => {
           </div>
         </section>
       </div>
-
       <div className="logout-container slide-up" style={{ animationDelay: "0.4s" }}>
-        <button className="danger-glass-btn" onClick={handleLogout}>
-          <FiLogOut className="logout-icon" />
-          Cerrar sesión
-        </button>
+        <button className="danger-glass-btn" onClick={handleLogout}><FiLogOut className="logout-icon" />Cerrar sesión</button>
       </div>
     </div>
   );
