@@ -1,16 +1,26 @@
-# React + Vite
+# FitSEO - Plataforma Interactiva de Gestión Deportiva
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+FitSEO es una aplicación web progresiva (PWA/Web App) diseñada para modernizar la experiencia del usuario dentro de centros deportivos. Este proyecto integra herramientas de gestión de estado físico, control de acceso mediante tecnología QR y una arquitectura backend escalable (BaaS), proporcionando una solución integral tanto para el usuario final como para la validación de membresías.
 
-Currently, two official plugins are available:
+## Arquitectura y Características Principales
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+* **Autenticación y Gestión de Usuarios:** Integración nativa con Supabase (`supabaseClient.js`) para manejar el registro, inicio de sesión y persistencia de perfiles de usuario de manera segura.
+* **Control de Acceso Integrado:** Implementación de un escáner QR nativo en el navegador (`QRScanner.jsx`), diseñado para validar el estado de las membresías (`MembershipStatus`) en tiempo real directamente desde el dispositivo del usuario o administrador.
+* **Módulos de Salud y Entrenamiento:** Vistas dinámicas para la captura de datos físicos (`NutritionForm`, `RutinesForm`) y renderizado de planes personalizados (`NutritionPlan`, `Exercises`).
+* **Enrutamiento Protegido:** Estructura de navegación segura que diferencia entre usuarios invitados (`Welcome`, `Login`) y usuarios autenticados (`Perfil`, `Inicio`).
 
-## React Compiler
+## Stack Tecnológico
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+* **Frontend Core:** React 18
+* **Build Tool:** Vite
+* **Backend as a Service (BaaS):** Supabase (Autenticación y Base de Datos)
+* **Estilos:** CSS puro y responsivo con enfoque "Mobile First"
+* **Librerías Clave:** React Router DOM (Navegación), integraciones para escaneo QR.
 
-## Expanding the ESLint configuration
+## Instalación y Ejecución Local
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Para visualizar y editar el entorno de desarrollo en una máquina local:
+
+1. Clona el repositorio:
+   ```bash
+   git clone [https://github.com/TuUsuario/fitseo.git](https://github.com/TuUsuario/fitseo.git)
